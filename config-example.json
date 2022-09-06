@@ -1,0 +1,17 @@
+{
+    "owners": ["UserID"],
+    "token": "",
+    "webhookUrl": "",
+    "guildMessageDisabled": ["GuildID"],
+    "statsUpdater": {
+        "guildID": "",
+        "usersChannel": "ChannelID",
+        "guildsChannel": "ChannelID",
+        "playersChannel": "ChannelID"
+    },
+    "slashReloader": {
+        "dev": true,
+        "clientId": "",
+        "guildId": ""
+    }
+}
