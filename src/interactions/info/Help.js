@@ -21,10 +21,6 @@ class Help extends BotInteraction {
         ];
     }
 
-    static invite(id) {
-        return `https://discord.com/api/oauth2/authorize?client_id=${id}&permissions=414518209792&scope=bot%20applications.commands`;
-    }
-
     async run({ interaction }) {
         let command = interaction.options.getString('command');
         if (command?.startsWith('/')) command = command.slice(1);
@@ -47,17 +43,6 @@ class Help extends BotInteraction {
                             .filter((cmd) => cmd.category === 'Info')
                             .map((cmd) => `\`/${cmd.name}`)
                             .join('`, ')}\``,
-                    },
-                    {
-                        name: '🎵 Music',
-                        value: `${this.client.interactions.commands
-                            .filter((cmd) => cmd.category === 'Music')
-                            .map((cmd) => `\`/${cmd.name}`)
-                            .join('`, ')}\``,
-                    },
-                    {
-                        name: '🔗 GIF Tutorial',
-                        value: '[Full Size Link](https://i.imgur.com/yM1Q2eB.gif)',
                     },
                 ])
                 .setImage('https://i.imgur.com/yM1Q2eB.gif')
