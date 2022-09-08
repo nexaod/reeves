@@ -1,24 +1,33 @@
-const { readdirSync } = require('fs');
-const { EmbedBuilder, InteractionType } = require('discord.js');
-const { Collection } = require('@discordjs/collection');
-const EventEmitter = require('events');
+import { readdirSync } from 'fs';
+import { EmbedBuilder, Collection, CommandInteraction, Interaction, SelectMenuInteraction, ChatInputCommandInteraction } from 'discord.js';
+import Bot from '../Bot';
+import BotInteraction from '../types/BotInteraction';
 
 // holy fuck i actually have brain cancer, this entire file needs to be rewriteen after new whitelists being done
 
-class InteractionHandler extends EventEmitter {
-    constructor(client) {
+export default interface InteractionHandler {
+    client: Bot;
+    commands: Collection<String, BotInteraction>;
+    built: Boolean;
+    on: (error: String, callback: Function) => void;
+}
+
+// export type BotInteraction = Interaction<any> | CommandInteraction<any> | SelectMenuInteraction<any> | ChatInputCommandInteraction<any>;
+
+export default class InteractionHandler extends EventEmitter {
+    constructor(client: Bot) {
         super();
         this.client = client;
         this.commands = new Collection();
         this.built = false;
-        this.on('error', (error) => client.logger.error(error));
-        this.client.on('interactionCreate', (interaction) => this.exec(interaction));
+        this.on('error', (error: unknown) => client.logger.error({ error }));
+        this.client.on('interactionCreate', (interaction): Promise<any> => this.exec(interaction));
     }
 
-    static checkPermission(permissions, interaction, client) {
-        if (permissions.includes('OWNER')) return client.util.config.owners.includes(interaction.user.id);
-        else return interaction.channel.permissionsFor(interaction.member).has(permissions);
-    }
+    // private checkPermission(permissions, interaction, client) {
+    //     if (permissions.includes('OWNER')) return client.util.config.owners.includes(interaction.user.id);
+    //     else return interaction.channel.permissionsFor(interaction.member).has(permissions);
+    // }
 
     build() {
         if (this.built) return this;
@@ -32,24 +41,21 @@ class InteractionHandler extends EventEmitter {
                 const Command = new Interaction(this.client);
                 Command.category = directory.name.charAt(0).toUpperCase() + directory.name.substring(1);
                 this.commands.set(Command.name, Command);
-                this.client.logger.debug(this.constructor.name, `\tCommand '${Command.name}' loaded (@${Command.uid})`);
+                this.client.logger.log({ message: `\tCommand '${Command.name}' loaded (@${Command.uid})`, handler: this.constructor.name });
             }
         }
-        this.client.logger.debug(this.constructor.name, `Loaded ${this.commands.size} interaction client command(s)`);
+        //this.client.logger.debug(this.constructor.name, `Loaded ${this.commands.size} interaction client command(s)`);
         this.built = true;
         return this;
     }
 
-    async exec(interaction) {
-        const userVoiceJoinable = (await interaction.member.voice?.channel?.joinable) ?? null;
-        const userVoiceChannelLimit = (await interaction.member.voice?.channel?.userLimit) ?? null;
-        const userVoiceChannelUserCount = (await interaction.member.voice?.channel?.members?.size) ?? null;
+    async exec(interaction: Interaction<any> | CommandInteraction<any> | SelectMenuInteraction<any> | ChatInputCommandInteraction<any>) {
         try {
             if (interaction.isCommand()) {
                 const command = this.commands.get(interaction.commandName);
                 if (!command) return;
                 // no perms check before run
-                if (command.permissions && !InteractionHandler.checkPermission(command.permissions, interaction, this.client)) {
+                if (!this.checkPermission(command.permissions, interaction, this.client)) {
                     return interaction.reply({
                         content: "You don't have the required permissions to use this command!",
                         ephemeral: true,
@@ -57,23 +63,20 @@ class InteractionHandler extends EventEmitter {
                 }
 
                 // general interaction commands
-                this.client.logger.log({
-                    constructor: this.constructor.name,
-                    message: `Executing Command ${command.name}`,
-                    commandName: command.name,
-                    uid: command.uid,
-                    type: interaction.isContextMenuCommand() ? 'ContextMenu' : 'Interaction',
-                    user: `${interaction.user.username}#${interaction.user.discriminator}`,
-                    userID: interaction.user.id,
-                    guild: interaction.guild.name,
-                    guildID: interaction.guild.id,
-                    channel: interaction.channel.name,
-                    channelId: interaction.channel.id,
-                });
+                // this.client.logger.log({
+                //     handler: this.constructor.name,
+                //     message: `Executing Command ${command.name} [${command.uid}]`,
+                //     user: `${interaction.user.username}#${interaction.user.discriminator}`,
+                //     userID: interaction.user.id,
+                //     guild: interaction.guild.name,
+                //     guildID: interaction.guild.id,
+                //     channel: interaction.channel?.name,
+                //     channelId: interaction.channel?.id,
+                // });
                 await command.run({ interaction });
                 this.client.commandsRun++;
             }
-        } catch (error) {
+        } catch (error: any) {
             const embed = new EmbedBuilder()
                 .setColor(0xff99cc)
                 .setTitle('Something errored!')
@@ -93,5 +96,3 @@ class InteractionHandler extends EventEmitter {
         }
     }
 }
-
-module.exports = InteractionHandler;

@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "description": "A Music bot made from indomitable and ESNext",
     "scripts": {
-        "start": "node index.js"
+        "start": "node ./dist/index.js"
     },
     "author": "TXJ",
     "license": "MIT",
@@ -28,6 +28,9 @@
         "uuid": "^8.3.2"
     },
     "devDependencies": {
-        "eslint": "^8.1.0"
+        "@types/uuid": "^8.3.4",
+        "eslint": "^8.1.0",
+        "ts-loader": "^9.3.1",
+        "typescript": "^4.8.2"
     }
 }
