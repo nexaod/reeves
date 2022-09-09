@@ -1,6 +1,6 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require('discord.js');
-const { ApplicationCommandOptionType } = require('discord-api-types/v9');
-const BotInteraction = require('../../abstract/BotInteraction.js');
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder } from 'discord.js';
+import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+import BotInteraction from '../../abstract/BotInteraction.js';
 
 class Help extends BotInteraction {
     get name() {

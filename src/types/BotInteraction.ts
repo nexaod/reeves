@@ -2,7 +2,7 @@
 import * as uuid from 'uuid';
 import Bot from '../Bot';
 
-export interface interactionData {
+export interface Permissions {
     name: string;
     description: string;
     options: string;
@@ -14,8 +14,8 @@ export default interface BotInteraction {
     category?: string | null;
     name: string;
     description: string;
-    permissions: interactionData;
-    run: (incoming: any) => Promise<void>;
+    permissions: Permissions;
+    run: (incoming: unknown) => Promise<void>;
 }
 
 export default class BotInteraction {

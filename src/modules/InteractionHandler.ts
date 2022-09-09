@@ -1,33 +1,26 @@
 import { readdirSync } from 'fs';
-import { EmbedBuilder, Collection, CommandInteraction, Interaction, SelectMenuInteraction, ChatInputCommandInteraction } from 'discord.js';
+import { EmbedBuilder, Collection, Interaction } from 'discord.js';
 import Bot from '../Bot';
 import BotInteraction from '../types/BotInteraction';
-
-// holy fuck i actually have brain cancer, this entire file needs to be rewriteen after new whitelists being done
+import EventEmitter = require('events');
 
 export default interface InteractionHandler {
     client: Bot;
     commands: Collection<String, BotInteraction>;
     built: Boolean;
-    on: (error: String, callback: Function) => void;
+    on: (...any: any[]) => typeof BotEvent;
 }
-
-// export type BotInteraction = Interaction<any> | CommandInteraction<any> | SelectMenuInteraction<any> | ChatInputCommandInteraction<any>;
 
 export default class InteractionHandler extends EventEmitter {
     constructor(client: Bot) {
         super();
-        this.client = client;
         this.commands = new Collection();
         this.built = false;
         this.on('error', (error: unknown) => client.logger.error({ error }));
-        this.client.on('interactionCreate', (interaction): Promise<any> => this.exec(interaction));
+        this.client.on('interactionCreate', (interaction): Promise<any> => {
+            return this.exec(interaction);
+        });
     }
-
-    // private checkPermission(permissions, interaction, client) {
-    //     if (permissions.includes('OWNER')) return client.util.config.owners.includes(interaction.user.id);
-    //     else return interaction.channel.permissionsFor(interaction.member).has(permissions);
-    // }
 
     build() {
         if (this.built) return this;
@@ -49,18 +42,18 @@ export default class InteractionHandler extends EventEmitter {
         return this;
     }
 
-    async exec(interaction: Interaction<any> | CommandInteraction<any> | SelectMenuInteraction<any> | ChatInputCommandInteraction<any>) {
-        try {
-            if (interaction.isCommand()) {
+    async exec(interaction: Interaction): Promise<any> {
+        if (interaction.isCommand()) {
+            try {
                 const command = this.commands.get(interaction.commandName);
                 if (!command) return;
                 // no perms check before run
-                if (!this.checkPermission(command.permissions, interaction, this.client)) {
-                    return interaction.reply({
-                        content: "You don't have the required permissions to use this command!",
-                        ephemeral: true,
-                    });
-                }
+                // if (!this.checkPermission(command.permissions, interaction, this.client)) {
+                //     return interaction.reply({
+                //         content: "You don't have the required permissions to use this command!",
+                //         ephemeral: true,
+                //     });
+                // }
 
                 // general interaction commands
                 // this.client.logger.log({
@@ -73,26 +66,26 @@ export default class InteractionHandler extends EventEmitter {
                 //     channel: interaction.channel?.name,
                 //     channelId: interaction.channel?.id,
                 // });
+                this.client.logger.log({ handler: this.constructor.name, message: `Executing Command ${command.name} [${command.uid}]` });
                 await command.run({ interaction });
                 this.client.commandsRun++;
-            }
-        } catch (error: any) {
-            const embed = new EmbedBuilder()
-                .setColor(0xff99cc)
-                .setTitle('Something errored!')
-                .setDescription(`\`\`\`js\n ${error.toString()}\`\`\``)
-                .setTimestamp()
-                .setFooter({ text: this.client.user.username, iconURL: this.client.user.displayAvatarURL() });
-            // TODO: CONVERT TO ERROR
-            this.client.logger.log({
-                constructor: this.constructor.name,
-                message: 'Something errored!',
-                error: error.toString(),
-            });
+            } catch (error: any) {
+                const embed = new EmbedBuilder()
+                    .setColor(0xff99cc)
+                    .setTitle('Something errored!')
+                    .setDescription(`\`\`\`js\n ${error.toString()}\`\`\``)
+                    .setTimestamp()
+                    .setFooter({ text: this.client.user?.username ?? '', iconURL: this.client.user?.displayAvatarURL() });
+                this.client.logger.error({
+                    handler: this.constructor.name,
+                    message: 'Something errored!',
+                    error: error.toString(),
+                });
 
-            if (interaction.replied || interaction.deferred) await interaction.editReply({ embeds: [embed] }).catch((error) => this.emit('error', error));
-            else await interaction.reply({ embeds: [embed] }).catch((error) => this.emit('error', error));
-            this.emit('error', error);
+                if (interaction.isRepliable() || interaction.isChatInputCommand()) await interaction.editReply({ embeds: [embed] }).catch((error: unknown) => this.emit('error', error));
+                else await interaction.reply({ embeds: [embed] }).catch((error: unknown): any => this.emit('error', error));
+                this.emit('error', error);
+            }
         }
     }
 }
