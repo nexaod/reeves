@@ -1,13 +1,20 @@
-const { readdirSync } = require('fs');
+import { readdirSync } from 'fs';
+import Bot from '../Bot';
+import { BotEvent } from '../types/BotEvent';
 
-class EventHandler {
-    constructor(client) {
+export default interface EventHandler {
+    client: Bot;
+    built: boolean;
+    // on: (...incoming: any[]) => void;
+}
+export default class EventHandler {
+    constructor(client: Bot) {
         this.client = client;
         this.built = false;
-        client.on('shardDisconnect', (event, id) => client.logger.debug(`Shard ${id}`, `Shard Disconnecting`));
-        client.on('shardReconnecting', (id) => client.logger.debug(`Shard ${id}`, 'Shard Reconnecting'));
-        client.on('shardResumed', (id, rep) => client.logger.debug(`Shard ${id}`, `Shard Resume | ${rep} events replayed`));
-        client.on('shardReady', (id) => client.logger.debug(`Shard ${id}`, 'Shard Ready'));
+        client.on('shardDisconnect', (event, id) => this.client.logger.log({ message: `Shard ${id} Shard Disconnecting`, handler: this.constructor.name }));
+        client.on('shardReconnecting', (id) => this.client.logger.log({ message: `Shard ${id} Shard Reconnecting`, handler: this.constructor.name }));
+        client.on('shardResumed', (id, rep) => this.client.logger.log({ message: `Shard ${id} Shard Resume | ${rep} events replayed`, handler: this.constructor.name }));
+        client.on('shardReady', (id) => this.client.logger.log({ message: `Shard ${id} | Shard Ready`, handler: this.constructor.name }));
     }
 
     build() {
@@ -16,20 +23,20 @@ class EventHandler {
         let index = 0;
         let disabledIndex = 0;
         for (let event of events) {
-            event = new (require(`../events/${event}`))(this.client);
-            if (event.enabled) {
-                const exec = event.exec.bind(event);
-                event.once ? this.client.once(event.name, event.exec.bind(event)) : this.client.on(event.name, exec);
+            const Event = require(`../events/${event}`);
+            const ClientEvent: BotEvent = new Event(this.client);
+
+            if (ClientEvent.enabled) {
+                const exec = ClientEvent.run.bind(event);
+                ClientEvent.fireOnce ? this.client.once(ClientEvent.name, ClientEvent.run.bind(event)) : this.client.on(ClientEvent.name, exec);
                 index++;
-            } else if (!event.enabled) {
+            } else if (!ClientEvent.enabled) {
                 disabledIndex++;
             }
         }
-        this.client.logger.debug(this.constructor.name, `Loaded ${index} client event(s)`);
-        this.client.logger.debug(this.constructor.name, `${disabledIndex} disabled client event(s)`);
+        this.client.logger.log({ message: `Loaded ${index} client event(s)`, handler: this.constructor.name });
+        this.client.logger.log({ message: `${disabledIndex} disabled client event(s)`, handler: this.constructor.name });
         this.built = true;
         return this;
     }
 }
-
-module.exports = EventHandler;
