@@ -1,11 +1,12 @@
-const BotEvent = require('../abstract/BotEvent.js');
+import { Guild } from 'discord.js';
+import { BotEvent } from '../types/BotEvent';
 
-class GuildCreate extends BotEvent {
+export default class GuildCreate extends BotEvent {
     get name() {
         return 'guildCreate';
     }
 
-    get once() {
+    get fireOnce() {
         return false;
     }
 
@@ -13,13 +14,10 @@ class GuildCreate extends BotEvent {
         return true;
     }
 
-    async run(guild) {
+    async run(guild: Guild): Promise<void> {
         this.client.logger.log({
-            constructor: this.constructor.name,
-            message: 'Joined new Guild',
-            guildName: guild.name,
-            guildMembers: guild.memberCount,
+            handler: this.constructor.name,
+            message: `Joined guild **${guild.name}** with **${guild.memberCount}** members.`,
         });
     }
 }
-module.exports = GuildCreate;

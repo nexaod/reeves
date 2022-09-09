@@ -1,11 +1,12 @@
-const BotEvent = require('../abstract/BotEvent.js');
+import { Guild } from 'discord.js';
+import BotEvent from '../types/BotEvent.js';
 
 class GuildDelete extends BotEvent {
     get name() {
         return 'guildDelete';
     }
 
-    get once() {
+    get fireOnce() {
         return false;
     }
 
@@ -13,14 +14,14 @@ class GuildDelete extends BotEvent {
         return true;
     }
 
-    async run(guild) {
+    run(guild: Guild) {
         if (!guild.available) return;
-        this.client.logger.log({
-            constructor: this.constructor.name,
-            message: 'Left guild',
-            guildName: guild.name,
-            guildMembers: guild.memberCount,
-        });
+        // this.client.logger.log({
+        //     constructor: this.constructor.name,
+        //     message: 'Left guild',
+        //     guildName: guild.name,
+        //     guildMembers: guild.memberCount,
+        // });
     }
 }
 module.exports = GuildDelete;
