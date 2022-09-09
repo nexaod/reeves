@@ -3,7 +3,7 @@ import { token } from '../config.json';
 import BotLogger from './modules/LoggingHandler';
 import InteractionHandler from './modules/InteractionHandler';
 import EventHandler from './modules/EventHandler';
-import UtilityHandler from './modules/UtilityHandler';
+// import UtilityHandler from './modules/UtilityHandler';
 
 export default interface Bot extends Client {
     color?: number;
@@ -26,7 +26,7 @@ export default class Bot extends Client {
         this.quitting = false;
         this.location = process.cwd();
         this.logger = new BotLogger();
-        this.interactions = new InteractionHandler(this).build();
+        // this.interactions = new InteractionHandler(this).build();
         this.events = new EventHandler(this).build();
 
         process.on('unhandledRejection', (err: any): void => {
