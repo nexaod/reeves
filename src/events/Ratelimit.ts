@@ -1,3 +1,5 @@
+import { RateLimitData } from 'discord.js';
+
 const BotEvent = require('../abstract/BotEvent.js');
 
 class Ratelimit extends BotEvent {
@@ -5,7 +7,7 @@ class Ratelimit extends BotEvent {
         return 'rateLimit';
     }
 
-    get once() {
+    get fireOnce() {
         return false;
     }
 
@@ -13,14 +15,14 @@ class Ratelimit extends BotEvent {
         return true;
     }
 
-    async run(info) {
+    async run(info: RateLimitData) {
         this.client.logger.debug(
             this.constructor.name,
             '\n' +
                 `  Route                    : ${info.route}\n` +
                 `  Hash                     : ${info.hash}\n` +
                 `  Max Requests             : ${info.limit}\n` +
-                `  Timeout                  : ${info.timeout}ms\n` +
+                `  Timeout                  : ${info.timeToReset}ms\n` +
                 `  Global Ratelimit         : ${info.global}`
         );
     }
