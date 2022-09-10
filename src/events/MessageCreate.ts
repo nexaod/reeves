@@ -1,14 +1,13 @@
-const BotEvent = require('../abstract/BotEvent.js');
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, MessageAttachment, ButtonStyle } = require('discord.js');
-const { getVideoMeta } = require('tiktok-scraper');
-const { readdirSync } = require('fs');
+import { Message } from 'discord.js';
+import { BotEvent } from '../types/BotEvent.js';
+import { readdirSync } from 'fs';
 
 class MessageCreate extends BotEvent {
     get name() {
         return 'messageCreate';
     }
 
-    get once() {
+    get fireOnce() {
         return false;
     }
 
@@ -16,13 +15,13 @@ class MessageCreate extends BotEvent {
         return true;
     }
 
-    async run(message) {
+    async run(message: Message<any>): Promise<any> {
         if (message.author.bot) return;
+        if (!message.inGuild()) return;
         if (this.client.util.config.guildMessageDisabled.includes(message.guild.id)) return;
-        const [command, ...args] = message.content.split(' ');
 
         // slash command handler
-        if (this.client.util.config.owners.includes(message.author.id) && message.content.startsWith(`<@${this.client.user.id}> build`)) {
+        if (this.client.util.config.owners.includes(message.author.id) && message.content.startsWith(`<@${this.client.user?.id}> build`)) {
             if (message.content.match(/help/gi)) {
                 const buildUsage = [
                     '`build` - Build Server Commands',
@@ -37,14 +36,14 @@ class MessageCreate extends BotEvent {
             if (message.content.match(/removeall/gi)) {
                 // remove only the guilds commands
                 if (message.content.match(/guild/gi))
-                    await message.guild.commands.set([]).catch((err) => {
-                        this.client.logger.error({ error: err.stack }, err.stack);
+                    await message.guild?.commands.set([]).catch((err) => {
+                        this.client.logger.error({ error: err.stack, handler: this.constructor.name });
                         message.react('❎');
                     });
                 // remove all slash commands globally
                 else
-                    await this.client.application.commands.set([]).catch((err) => {
-                        this.client.logger.error({ error: err.stack }, err.stack);
+                    await this.client.application?.commands.set([]).catch((err) => {
+                        this.client.logger.error({ error: err.stack, handler: this.constructor.name });
                         message.react('❎');
                     });
                 return message.reply({ content: 'Done' });
@@ -61,22 +60,12 @@ class MessageCreate extends BotEvent {
             if (message.content.match(/global/gi)) {
                 if (!this.client.application) return message.reply({ content: `There is no client.application?` }).catch(() => {});
                 let res = await this.client.application.commands.set(data).catch((e) => e);
-                if (res instanceof Error) return this.client.logger.error({ error: res.stack }, res.stack);
+                if (res instanceof Error) return this.client.logger.error({ error: res.stack, handler: this.constructor.name });
                 return message.reply({ content: `Deploying (**${data.length.toLocaleString()}**) slash commands, this could take up to 1 hour` }).catch(() => {});
             }
-            let res = await message.guild.commands.set(data).catch((e) => e);
-            if (res instanceof Error) return this.client.logger.error({ error: res.stack }, res.stack).catch(() => {});
+            let res = await message.guild?.commands.set(data).catch((e) => e);
+            if (res instanceof Error) return this.client.logger.error({ error: res.stack, handler: this.constructor.name });
             return message.reply({ content: `Deploying (**${data.length.toLocaleString()}**) slash commands` }).catch(() => {});
-        }
-
-        // Nickname util
-        if (this.client.util.config.owners.includes(message.author.id) && message.content.startsWith(`<@${this.client.user.id}> nick`)) {
-            try {
-                message.guild.me.setNickname(args.slice(1).join(' ') || null);
-            } catch (error) {
-                return message.react('❎');
-            }
-            return message.react('✅');
         }
     }
 }
