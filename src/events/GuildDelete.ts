@@ -1,7 +1,7 @@
 import { Guild } from 'discord.js';
 import BotEvent from '../types/BotEvent.js';
 
-class GuildDelete extends BotEvent {
+export default class GuildDelete extends BotEvent {
     get name() {
         return 'guildDelete';
     }
@@ -14,8 +14,11 @@ class GuildDelete extends BotEvent {
         return true;
     }
 
-    run(guild: Guild) {
-        if (!guild.available) return;
+    async run(guild: Guild): Promise<void> {
+        this.client.logger.log({
+            handler: this.constructor.name,
+            message: `Left guild **${guild.name}** with **${guild.memberCount}** members.`,
+        });
         // this.client.logger.log({
         //     constructor: this.constructor.name,
         //     message: 'Left guild',
@@ -24,4 +27,3 @@ class GuildDelete extends BotEvent {
         // });
     }
 }
-module.exports = GuildDelete;

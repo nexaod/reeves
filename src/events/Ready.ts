@@ -1,5 +1,6 @@
-import { BotEvent } from '../types/BotEvent';
-class Ready extends BotEvent {
+// import Bot from '../Bot';
+import BotEvent from '../types/BotEvent';
+export default class Ready extends BotEvent {
     get name() {
         return 'ready';
     }
@@ -24,4 +25,3 @@ class Ready extends BotEvent {
         }, 300000);
     }
 }
-module.exports = Ready;

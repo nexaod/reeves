@@ -1,8 +1,8 @@
 import { Message } from 'discord.js';
-import { BotEvent } from '../types/BotEvent.js';
+import BotEvent from '../types/BotEvent.js';
 import { readdirSync } from 'fs';
 
-class MessageCreate extends BotEvent {
+export default class MessageCreate extends BotEvent {
     get name() {
         return 'messageCreate';
     }
@@ -69,4 +69,3 @@ class MessageCreate extends BotEvent {
         }
     }
 }
-module.exports = MessageCreate;

@@ -1,5 +1,6 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require('discord.js');
-const BotInteraction = require('../../abstract/BotInteraction.js');
+import { EmbedBuilder } from 'discord.js';
+import BotInteraction from '../../types/BotInteraction';
+import { ChatInputCommandInteraction } from 'discord.js';
 
 class Stats extends BotInteraction {
     get name() {
@@ -18,12 +19,12 @@ class Stats extends BotInteraction {
         return _result;
     }
 
-    async run({ interaction }) {
+    async run(interaction: ChatInputCommandInteraction): Promise<void> {
         const pingTime = Date.now();
         await interaction.deferReply();
 
         const embed = new EmbedBuilder()
-            .setColor(this.client.color)
+            .setColor(this.client.color ?? 0x00000)
             .setTitle('Status')
             .setDescription(
                 `\`\`\`ml\n
@@ -37,7 +38,7 @@ Memory      :: ${JSON.stringify(this.memory, null, 2)}
 \`\`\``
             )
             .setTimestamp()
-            .setFooter({ text: this.client.user.username, iconURL: this.client.user.displayAvatarURL() });
+            .setFooter({ text: this.client.user?.username ?? 'Roxanne', iconURL: this.client.user?.displayAvatarURL() });
         await interaction.editReply({ embeds: [embed], components: [] });
     }
 }

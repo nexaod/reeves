@@ -3,6 +3,7 @@ import { token } from '../config.json';
 import BotLogger from './modules/LoggingHandler';
 import InteractionHandler from './modules/InteractionHandler';
 import EventHandler from './modules/EventHandler';
+import UtilityHandler from './modules/UtilityHandler';
 // import UtilityHandler from './modules/UtilityHandler';
 
 export default interface Bot extends Client {

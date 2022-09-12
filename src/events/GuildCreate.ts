@@ -1,5 +1,5 @@
 import { Guild } from 'discord.js';
-import { BotEvent } from '../types/BotEvent';
+import BotEvent from '../types/BotEvent';
 
 export default class GuildCreate extends BotEvent {
     get name() {
