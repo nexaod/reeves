@@ -9,19 +9,18 @@ export interface Permissions {
 }
 
 export default interface BotInteraction {
-    uid?: string;
+    uid: string;
     client: Bot;
-    category?: string | null;
-    name: string;
-    description: string;
-    permissions: Permissions;
-    run: (incoming: unknown) => Promise<void>;
+    get category(): string;
+    get name(): string;
+    get description(): string;
+    get permissions(): Permissions;
+    run(args: unknown): Promise<void>;
 }
 
 export default class BotInteraction {
     constructor(client: Bot) {
         this.uid = uuid.v4();
         this.client = client;
-        this.category = null;
     }
 }
