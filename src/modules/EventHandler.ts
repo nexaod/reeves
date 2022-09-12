@@ -1,6 +1,7 @@
 import { readdirSync } from 'fs';
 import Bot from '../Bot';
-import { BotEvent } from '../types/BotEvent';
+import BotEvent from '../types/BotEvent';
+// import BotInteraction from '../types/BotInteraction';
 
 export default interface EventHandler {
     client: Bot;
@@ -19,20 +20,23 @@ export default class EventHandler {
 
     build() {
         if (this.built) return this;
-        const events = readdirSync(this.client.location + '/src/events');
+        const events = readdirSync(this.client.location + '/dist/src/events');
         let index = 0;
         let disabledIndex = 0;
         for (let event of events) {
-            const Event = require(`../events/${event}`);
-            const ClientEvent: BotEvent = new Event(this.client);
-
-            if (ClientEvent.enabled) {
-                const exec = ClientEvent.run.bind(event);
-                ClientEvent.fireOnce ? this.client.once(ClientEvent.name, ClientEvent.run.bind(event)) : this.client.on(ClientEvent.name, exec);
-                index++;
-            } else if (!ClientEvent.enabled) {
-                disabledIndex++;
+            if (event.endsWith('.js')) {
+                import(`${this.client.location}/dist/src/events/${event}`).then((event) => {
+                    const botEvent: BotEvent = new event.default(this.client);
+                    if (botEvent.enabled) {
+                        const exec = botEvent.exec.bind(botEvent);
+                        this.client[botEvent.fireOnce ? 'once' : 'on'](botEvent.name, exec);
+                        index++;
+                    } else if (!botEvent.enabled) {
+                        disabledIndex++;
+                    }
+                });
             }
+            // const botEvent: BotEvent = new wvent(this.client);
         }
         this.client.logger.log({ message: `Loaded ${index} client event(s)`, handler: this.constructor.name });
         this.client.logger.log({ message: `${disabledIndex} disabled client event(s)`, handler: this.constructor.name });
