@@ -8,7 +8,6 @@ export default interface InteractionHandler {
     client: Bot;
     commands: Collection<String, BotInteraction>;
     built: Boolean;
-    on: (...any: any[]) => typeof BotEvent;
 }
 
 export default class InteractionHandler extends EventEmitter {

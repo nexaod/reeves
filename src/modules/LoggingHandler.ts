@@ -3,6 +3,7 @@ import { webhookUrl } from '../../config.json';
 import { WebhookClient } from 'discord.js';
 
 export default interface BotLogger {
+    webhookUrl: typeof webhookUrl;
     webhook: WebhookClient;
 }
 
@@ -21,7 +22,8 @@ export type BotError = {
 
 export default class BotLogger {
     constructor() {
-        if (!this.webhook) throw new Error('Webhook is missing in config file.');
+        this.webhookUrl = webhookUrl ?? null;
+        if (!this.webhookUrl) throw new Error('Webhook URL is missing in config file.');
         this.webhook = new WebhookClient({ url: webhookUrl });
         this.webhook.send('Health check initialized').catch(console.error);
     }
