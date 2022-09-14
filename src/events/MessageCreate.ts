@@ -23,8 +23,22 @@ export default class MessageCreate extends BotEvent {
 
         // boop message
         if (message.content.startsWith(`<@${this.client.user?.id}> boop`)) {
+            this.client.commandsRun++;
             this.client.logger.log({ message: `${message.author.username} booped the bot.`, uid: `(@${this.uid})` });
             return message.reply({ content: '<a:majjnow:1006284731928805496>' });
+        }
+
+        // mastery information
+        if (message.content.startsWith(`<@${this.client.user?.id}> mastery`)) {
+            // mastery help
+            if (message.content.match(/help/gi)) {
+                const masteryUsage = [
+                    '`mastery help` - Shows this message',
+                    '`mastery current` - Shows all Current Mastery Roles with User Counts',
+                    '`mastery reset all` - Removes all users from Mastery Roles',
+                ];
+                return message.reply({ content: masteryUsage.join('\n') });
+            }
         }
 
         // slash command handler
