@@ -1,10 +1,9 @@
+import 'dotenv/config';
 import { Client, ClientOptions } from 'discord.js';
-import { token } from '../config.json';
 import BotLogger from './modules/LoggingHandler';
 import InteractionHandler from './modules/InteractionHandler';
 import EventHandler from './modules/EventHandler';
 import UtilityHandler from './modules/UtilityHandler';
-// import UtilityHandler from './modules/UtilityHandler';
 
 export default interface Bot extends Client {
     color: number;
@@ -38,7 +37,7 @@ export default class Bot extends Client {
     }
 
     async login() {
-        await super.login(token);
+        await super.login(process.env.TOKEN);
         return this.constructor.name;
     }
 

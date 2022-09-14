@@ -1,7 +1,9 @@
+import 'dotenv/config';
 import { GatewayIntentBits } from 'discord.js';
 import { Indomitable, IndomitableOptions } from 'indomitable';
-import { token } from './config.json';
 import Bot from './src/Bot';
+
+if (!process.env.TOKEN) throw new Error('Token Missing');
 
 const { Guilds, GuildMembers, GuildBans, GuildVoiceStates, GuildMessages, GuildMessageReactions } = GatewayIntentBits;
 
@@ -13,7 +15,7 @@ const sharderOptions: IndomitableOptions = {
     },
     client: Bot as any,
     autoRestart: true,
-    token,
+    token: process.env.TOKEN ?? '',
     clusterCount: 1,
 };
 
