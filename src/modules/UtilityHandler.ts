@@ -37,7 +37,11 @@ export default class UtilityHandler {
         }
     }
 
-    convertMS(ms: number): string {
+    public trim(string: string, max: number): string {
+        return string.length > max ? string.slice(0, max) : string;
+    }
+
+    public convertMS(ms: number): string {
         let seconds = (ms / 1000).toFixed(1),
             minutes = (ms / (1000 * 60)).toFixed(1),
             hours = (ms / (1000 * 60 * 60)).toFixed(1),
@@ -48,7 +52,7 @@ export default class UtilityHandler {
         else return days + ' Days';
     }
 
-    convertBytes(bytes: number): string {
+    public convertBytes(bytes: number): string {
         const MB = Math.floor((bytes / 1024 / 1024) % 1000);
         const GB = Math.floor(bytes / 1024 / 1024 / 1024);
         if (MB >= 1000) return `${GB.toFixed(1)} GB`;
