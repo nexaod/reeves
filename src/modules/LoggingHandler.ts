@@ -30,18 +30,24 @@ export default class BotLogger {
         this.webhook.send('Health check initialized').catch((reason) => console.log(reason));
     }
 
+    private webhook_formatter(incoming: BotLog | BotError): string {
+        return `\`\`\`json\n${JSON.stringify(incoming, null, 2)}\n\`\`\``;
+    }
+
     get id() {
         return isMaster ? 'Parent' : process.env.CLUSTER_ID;
     }
 
     public log(incoming: BotLog): void {
         const _format: string = JSON.stringify(incoming, null, 2);
-        this.webhook.send(_format);
+
+        this.webhook.send(this.webhook_formatter(incoming));
         return console.log('[INFO]', _format);
     }
 
     public error(incoming: BotError): void {
-        this.webhook.send(JSON.stringify(incoming));
-        return console.log('[ERROR]', incoming);
+        const _format: string = JSON.stringify(incoming, null, 2);
+        this.webhook.send(this.webhook_formatter(incoming));
+        return console.log('[ERROR]', _format);
     }
 }
