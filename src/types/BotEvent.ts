@@ -16,7 +16,10 @@ export default class BotEvent extends EventEmitter {
         super();
         this.client = client;
         this.uid = uuid.v4();
-        this.on('error', (error) => client.logger.error({ error, handler: this.constructor.name }));
+        this.on('error', (error) => {
+            console.log(error);
+            client.logger.error({ error: error, handler: this.constructor.name });
+        });
     }
 
     exec(...args: any) {
