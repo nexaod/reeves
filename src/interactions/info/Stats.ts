@@ -2,7 +2,7 @@ import { EmbedBuilder } from 'discord.js';
 import BotInteraction from '../../types/BotInteraction';
 import { ChatInputCommandInteraction } from 'discord.js';
 
-class Stats extends BotInteraction {
+export default class Stats extends BotInteraction {
     get name() {
         return 'stats';
     }
@@ -42,4 +42,3 @@ Memory      :: ${JSON.stringify(this.memory, null, 2)}
         await interaction.editReply({ embeds: [embed], components: [] });
     }
 }
-module.exports = Stats;

@@ -1,6 +1,7 @@
 import { Message } from 'discord.js';
 import BotEvent from '../types/BotEvent.js';
 import { readdirSync } from 'fs';
+import BotInteraction from '../types/BotInteraction.js';
 
 export default class MessageCreate extends BotEvent {
     get name() {
@@ -15,7 +16,7 @@ export default class MessageCreate extends BotEvent {
         return true;
     }
 
-    async run(message: Message<any>): Promise<any> {
+    async run(message: Message): Promise<any> {
         if (message.author.bot) return;
         if (!message.inGuild()) return;
         if (this.client.util.config.guildMessageDisabled.includes(message.guild.id)) return;
@@ -48,24 +49,35 @@ export default class MessageCreate extends BotEvent {
                     });
                 return message.reply({ content: 'Done' });
             }
-            let data = [];
-            for (const directory of readdirSync(`${this.client.location}/src/interactions`, { withFileTypes: true })) {
-                if (!directory.isDirectory()) continue;
-                for (const command of readdirSync(`${this.client.location}/src/interactions/${directory.name}`, { withFileTypes: true })) {
-                    if (!command.isFile()) continue;
-                    const Interaction = require(`${this.client.location}/src/interactions/${directory.name}/${command.name}`);
-                    data.push(new Interaction({}).interactionData);
-                }
-            }
+
+            let data: any[] = [];
+            await this.buildCommands(data);
+
             if (message.content.match(/global/gi)) {
                 if (!this.client.application) return message.reply({ content: `There is no client.application?` }).catch(() => {});
                 let res = await this.client.application.commands.set(data).catch((e) => e);
                 if (res instanceof Error) return this.client.logger.error({ error: res.stack, handler: this.constructor.name });
                 return message.reply({ content: `Deploying (**${data.length.toLocaleString()}**) slash commands, this could take up to 1 hour` }).catch(() => {});
             }
-            let res = await message.guild?.commands.set(data).catch((e) => e);
+
+            let res = await message.guild.commands.set(data).catch((e) => e);
             if (res instanceof Error) return this.client.logger.error({ error: res.stack, handler: this.constructor.name });
             return message.reply({ content: `Deploying (**${data.length.toLocaleString()}**) slash commands` }).catch(() => {});
+        }
+    }
+
+    private async buildCommands(data: any[]) {
+        for await (const directory of readdirSync(`${this.client.location}/dist/src/interactions`, { withFileTypes: true })) {
+            if (!directory.isDirectory()) continue;
+            for await (const command of readdirSync(`${this.client.location}/dist/src/interactions/${directory.name}`, { withFileTypes: true })) {
+                if (!command.isFile()) continue;
+                if (command.name.endsWith('js')) {
+                    import(`${this.client.location}/dist/src/interactions/${directory.name}/${command.name}`).then((interaction) => {
+                        const Command: BotInteraction = new interaction.default(this.client);
+                        Command ? data.push(Command.interactionData) : void 0;
+                    });
+                }
+            }
         }
     }
 }

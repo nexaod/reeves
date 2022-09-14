@@ -8,6 +8,8 @@ export default interface BotLogger {
 }
 
 export type BotLog = {
+    uid?: string;
+    args?: unknown;
     handler?: string;
     message: string;
     error?: unknown;
@@ -25,7 +27,7 @@ export default class BotLogger {
         this.webhookUrl = webhookUrl ?? null;
         if (!this.webhookUrl) throw new Error('Webhook URL is missing in config file.');
         this.webhook = new WebhookClient({ url: webhookUrl });
-        this.webhook.send('Health check initialized').catch(console.error);
+        this.webhook.send('Health check initialized').catch((reason) => console.log(reason));
     }
 
     get id() {
@@ -34,11 +36,12 @@ export default class BotLogger {
 
     public log(incoming: BotLog): void {
         const _format: string = JSON.stringify(incoming, null, 2);
+        this.webhook.send(_format);
         return console.log('[INFO]', _format);
     }
 
     public error(incoming: BotError): void {
-        const _formattedError: string = JSON.stringify(incoming.error);
-        return console.log('[ERROR]', _formattedError, incoming.message);
+        this.webhook.send(JSON.stringify(incoming));
+        return console.log('[ERROR]', incoming);
     }
 }

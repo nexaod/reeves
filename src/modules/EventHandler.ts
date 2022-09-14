@@ -15,7 +15,7 @@ export default class EventHandler {
         client.on('shardDisconnect', (event, id) => this.client.logger.log({ message: `Shard ${id} Shard Disconnecting`, handler: this.constructor.name }));
         client.on('shardReconnecting', (id) => this.client.logger.log({ message: `Shard ${id} Shard Reconnecting`, handler: this.constructor.name }));
         client.on('shardResumed', (id, rep) => this.client.logger.log({ message: `Shard ${id} Shard Resume | ${rep} events replayed`, handler: this.constructor.name }));
-        client.on('shardReady', (id) => this.client.logger.log({ message: `Shard ${id} | Shard Ready`, handler: this.constructor.name }));
+        client.on('shardReady', (id) => this.client.logger.log({ message: `Shard ${id} | Shard Ready`, handler: this.constructor.name, uid: `Internal Cluster` }));
     }
 
     build() {
@@ -27,6 +27,7 @@ export default class EventHandler {
             if (event.endsWith('.js')) {
                 import(`${this.client.location}/dist/src/events/${event}`).then((event) => {
                     const botEvent: BotEvent = new event.default(this.client);
+                    this.client.logger.log({ message: `Event '${botEvent.name}' loaded.`, handler: this.constructor.name, uid: `(@${botEvent.uid})` });
                     if (botEvent.enabled) {
                         const exec = botEvent.exec.bind(botEvent);
                         this.client[botEvent.fireOnce ? 'once' : 'on'](botEvent.name, exec);
@@ -36,7 +37,6 @@ export default class EventHandler {
                     }
                 });
             }
-            // const botEvent: BotEvent = new wvent(this.client);
         }
         this.client.logger.log({ message: `Loaded ${index} client event(s)`, handler: this.constructor.name });
         this.client.logger.log({ message: `${disabledIndex} disabled client event(s)`, handler: this.constructor.name });

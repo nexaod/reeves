@@ -1,4 +1,5 @@
 // import Bot from '../Bot';
+import Bot from '../Bot';
 import BotEvent from '../types/BotEvent';
 export default class Ready extends BotEvent {
     get name() {
@@ -14,7 +15,7 @@ export default class Ready extends BotEvent {
     }
 
     //test comment
-    async run() {
+    async run(client: Bot) {
         this.client.logger.log({ message: `[${this.client.user?.username}] Ready! Serving ${this.client.guilds.cache.size} guild(s) with ${this.client.users.cache.size} user(s)` });
         this.client.user?.setActivity("What's the worst that could happen?!");
         const statuses: string[] = ['If you see this, dont look down. :)', 'Always got to make time for tea-time!', 'Burning... Love!', 'Going crazy, too much to do, too little time.'];

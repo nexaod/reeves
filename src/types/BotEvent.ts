@@ -8,7 +8,7 @@ export default interface BotEvent {
     get name(): string;
     get fireOnce(): boolean;
     get enabled(): boolean;
-    run(args: unknown): Promise<void>;
+    run(args: unknown | unknown[]): Promise<void>;
 }
 
 export default class BotEvent extends EventEmitter {
@@ -16,10 +16,12 @@ export default class BotEvent extends EventEmitter {
         super();
         this.client = client;
         this.uid = uuid.v4();
-        this.on('error', (error) => client.logger.error(error));
+        this.on('error', (error) => client.logger.error({ error, handler: this.constructor.name }));
     }
 
-    exec(...args: unknown[]) {
-        this.run(args).catch((error) => this.emit('error', error));
+    exec(...args: any) {
+        const _args = args.length ? args.shift() : args;
+        type EmittedError = typeof Object;
+        this.run(_args).catch((error: EmittedError) => this.emit('error', error));
     }
 }
