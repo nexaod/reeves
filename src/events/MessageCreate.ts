@@ -21,6 +21,12 @@ export default class MessageCreate extends BotEvent {
         if (!message.inGuild()) return;
         if (this.client.util.config.guildMessageDisabled.includes(message.guild.id)) return;
 
+        // boop message
+        if (message.content.startsWith(`<@${this.client.user?.id}> boop`)) {
+            this.client.logger.log({ message: `${message.author.username} booped the bot.`, uid: `(@${this.uid})` });
+            return message.reply({ content: '<a:majjnow:1006284731928805496>' });
+        }
+
         // slash command handler
         if (this.client.util.config.owners.includes(message.author.id) && message.content.startsWith(`<@${this.client.user?.id}> build`)) {
             if (message.content.match(/help/gi)) {
