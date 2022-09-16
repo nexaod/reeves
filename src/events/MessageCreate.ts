@@ -1,8 +1,7 @@
-import { Collection, EmbedBuilder, GuildMember, Message, Role } from 'discord.js';
+import { Message } from 'discord.js';
 import BotEvent from '../types/BotEvent.js';
 import { readdirSync } from 'fs';
 import BotInteraction from '../types/BotInteraction';
-import type { MasteryData } from '../types/MasteryData';
 
 export default class MessageCreate extends BotEvent {
     get name() {
