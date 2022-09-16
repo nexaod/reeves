@@ -1,16 +1,9 @@
-import { EmbedBuilder, Message } from 'discord.js';
+import { Collection, EmbedBuilder, GuildMember, Message, Role } from 'discord.js';
 import BotEvent from '../types/BotEvent.js';
 import { readdirSync } from 'fs';
-import BotInteraction from '../types/BotInteraction.js';
+import BotInteraction from '../types/BotInteraction';
+import type { MasteryData } from '../types/MasteryData';
 
-export interface MasteryData {
-    grandmaster: string[];
-    master: string[];
-    adept: string[];
-    apprentice: string[];
-    initiate: string[];
-    novice: string[];
-}
 export default class MessageCreate extends BotEvent {
     get name() {
         return 'messageCreate';
@@ -24,39 +17,47 @@ export default class MessageCreate extends BotEvent {
         return true;
     }
 
-    private async mastery() {
-        const mastery_map: MasteryData = {
-            grandmaster: [],
-            master: [],
-            adept: [],
-            apprentice: [],
-            initiate: [],
-            novice: [],
-        };
-        await this.client.guilds.cache.get('534508796639182860')?.members.fetch();
-        const roles = this.client.guilds.cache.get('534508796639182860')?.roles.cache;
-        if (roles) {
-            roles.map((role) => {
-                if (role) {
-                    console.log({ message: `Role: ${role.name}, Members: ${role.members.size}`, uid: `<Private>#Mastery()` });
-                    if (role.name.toLowerCase().includes('grandmaster')) {
-                        mastery_map.grandmaster.push(`'${role.name}': '${role.members.size}' members.`);
-                    } else if (role.name.includes(' Master')) {
-                        mastery_map.master.push(`'${role.name}': '${role.members.size}' members.`);
-                    } else if (role.name.toLowerCase().includes('adept')) {
-                        mastery_map.adept.push(`'${role.name}': '${role.members.size}' members.`);
-                    } else if (role.name.toLowerCase().includes('apprentice')) {
-                        mastery_map.apprentice.push(`'${role.name}': '${role.members.size}' members.`);
-                    } else if (role.name.toLowerCase().includes('initiate')) {
-                        mastery_map.initiate.push(`'${role.name}': '${role.members.size}' members.`);
-                    } else if (role.name.toLowerCase().includes('novice')) {
-                        mastery_map.novice.push(`'${role.name}': '${role.members.size}' members.`);
-                    }
-                }
-            });
-        }
-        return mastery_map;
-    }
+    // private async mastery() {
+    //     const mastery_map: MasteryData = {
+    //         grandmaster: [],
+    //         master: [],
+    //         adept: [],
+    //         apprentice: [],
+    //         initiate: [],
+    //         novice: [],
+    //     };
+    //     await this.membersCache();
+    //     const roles = this.rolesCache();
+    //     if (roles) {
+    //         roles.map((role) => {
+    //             if (role) {
+    //                 console.log({ message: `Role: ${role.name}, Members: ${role.members.size}`, uid: `<Private>#Mastery()` });
+    //                 if (role.name.toLowerCase().includes('grandmaster')) {
+    //                     mastery_map.grandmaster.push(`'${role.name}': '${role.members.size}' members.`);
+    //                 } else if (role.name.includes(' Master')) {
+    //                     mastery_map.master.push(`'${role.name}': '${role.members.size}' members.`);
+    //                 } else if (role.name.toLowerCase().includes('adept')) {
+    //                     mastery_map.adept.push(`'${role.name}': '${role.members.size}' members.`);
+    //                 } else if (role.name.toLowerCase().includes('apprentice')) {
+    //                     mastery_map.apprentice.push(`'${role.name}': '${role.members.size}' members.`);
+    //                 } else if (role.name.toLowerCase().includes('initiate')) {
+    //                     mastery_map.initiate.push(`'${role.name}': '${role.members.size}' members.`);
+    //                 } else if (role.name.toLowerCase().includes('novice')) {
+    //                     mastery_map.novice.push(`'${role.name}': '${role.members.size}' members.`);
+    //                 }
+    //             }
+    //         });
+    //     }
+    //     return mastery_map;
+    // }
+
+    // private async membersCache(): Promise<Collection<string, GuildMember> | undefined> {
+    //     return await this.client.guilds.cache.get('534508796639182860')?.members.fetch();
+    // }
+
+    // private rolesCache(): Collection<string, Role> | undefined {
+    //     return this.client.guilds.cache.get('534508796639182860')?.roles.cache;
+    // }
 
     async run(message: Message): Promise<any> {
         if (message.author.bot) return;
@@ -83,18 +84,18 @@ export default class MessageCreate extends BotEvent {
                 return message.reply({ content: masteryUsage.join('\n') });
             }
 
-            if (this.client.util.config.owners.includes(message.author.id) && message.content.match(/current/gi)) {
-                const loading = await message.reply(`Loading information please wait...`);
-                const data: MasteryData = await this.mastery();
-                const trimmed: string = this.client.util.trim(JSON.stringify(data, null, 2), 4000);
-                const embed = new EmbedBuilder()
-                    .setColor(this.client.color)
-                    .setTitle('Mastery Results')
-                    .setDescription(`\`\`\`js\n${trimmed}\`\`\``)
-                    .setTimestamp()
-                    .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
-                loading.edit({ content: 'Mastery data loaded', embeds: [embed] });
-            }
+            // if (this.client.util.config.owners.includes(message.author.id) && message.content.match(/current/gi)) {
+            //     const loading = await message.reply(`Loading information please wait...`);
+            //     // const data: MasteryData = await this.mastery();
+            //     const trimmed: string = this.client.util.trim(JSON.stringify(data, null, 2), 4000);
+            //     const embed = new EmbedBuilder()
+            //         .setColor(this.client.color)
+            //         .setTitle('Mastery Results')
+            //         .setDescription(`\`\`\`js\n${trimmed}\`\`\``)
+            //         .setTimestamp()
+            //         .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
+            //     loading.edit({ content: 'Mastery data loaded', embeds: [embed] });
+            // }
         }
 
         // slash command handler
