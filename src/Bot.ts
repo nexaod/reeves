@@ -8,7 +8,7 @@ import UtilityHandler from './modules/UtilityHandler';
 export default interface Bot extends Client {
     color: number;
     commandsRun: number;
-    util?: any;
+    util: UtilityHandler;
     quitting?: boolean;
     location?: string;
     logger: BotLogger;
