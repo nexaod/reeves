@@ -1,4 +1,4 @@
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import BotInteraction from '../../types/BotInteraction';
 import { ChatInputCommandInteraction } from 'discord.js';
 
@@ -9,6 +9,10 @@ export default class Stats extends BotInteraction {
 
     get description() {
         return 'My current info!';
+    }
+
+    get slashData() {
+        return new SlashCommandBuilder().setName(this.name).setDescription(this.description);
     }
 
     get memory() {

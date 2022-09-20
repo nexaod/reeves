@@ -1,5 +1,5 @@
 import BotInteraction from '../../types/BotInteraction';
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 
 export default class Ping extends BotInteraction {
     get name() {
@@ -8,6 +8,10 @@ export default class Ping extends BotInteraction {
 
     get description() {
         return 'Basic pongy command!';
+    }
+
+    get slashData() {
+        return new SlashCommandBuilder().setName(this.name).setDescription(this.description);
     }
 
     async run(interaction: ChatInputCommandInteraction) {

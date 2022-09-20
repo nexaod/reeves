@@ -41,7 +41,8 @@ export default class UtilityHandler {
         return string.length > max ? string.slice(0, max) : string;
     }
 
-    public convertMS(ms: number): string {
+    public convertMS(ms: number | null): string {
+        if (!ms) return 'n/a';
         let seconds = (ms / 1000).toFixed(1),
             minutes = (ms / (1000 * 60)).toFixed(1),
             hours = (ms / (1000 * 60 * 60)).toFixed(1),

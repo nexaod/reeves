@@ -1,6 +1,6 @@
 import BotInteraction from '../../types/BotInteraction';
-import { ChatInputCommandInteraction, Guild, Collection, GuildMember, Role } from 'discord.js';
-import type { MasteryConfiguration, MasteryData } from '../../types/MasteryData';
+import { ChatInputCommandInteraction, Guild, Collection, GuildMember, Role, SlashCommandBuilder } from 'discord.js';
+import type { MasteryData } from '../../types/MasteryData';
 
 export default class Mastery extends BotInteraction {
     get name() {
@@ -15,6 +15,10 @@ export default class Mastery extends BotInteraction {
         return 'OWNER';
     }
 
+    get slashData() {
+        return new SlashCommandBuilder().setName(this.name).setDescription(this.description);
+    }
+
     // get options() {
     //     return [
     //         {
@@ -26,16 +30,8 @@ export default class Mastery extends BotInteraction {
     //     ];
     // }
 
-    private get configuration(): MasteryConfiguration {
-        return {
-            pvme_guild_id: '534508796639182860',
-            pvme_staff_id: '534509707340021771',
-            pvme_retired_staff_id: '955608542415552532',
-        };
-    }
-
     private async memberCache(): Promise<Guild | undefined> {
-        const guild: Guild | undefined = this.client.guilds.cache.get(this.configuration.pvme_guild_id);
+        const guild: Guild | undefined = this.client.guilds.cache.get(this.client.util.config.pvmeData.pvme_guild_id);
         const members: Collection<string, GuildMember> | undefined = await guild?.members.fetch();
         if (guild && members) return guild;
         else return undefined;
@@ -80,7 +76,7 @@ export default class Mastery extends BotInteraction {
     async run(interaction: ChatInputCommandInteraction) {
         if (interaction.inCachedGuild()) {
             await interaction.deferReply({ ephemeral: false });
-            const _canUseCommand: Collection<string, Role> = interaction.member?.roles.cache.filter((role) => role.id.includes(this.configuration.pvme_staff_id));
+            const _canUseCommand: Collection<string, Role> = interaction.member?.roles.cache.filter((role) => role.id.includes(this.client.util.config.pvmeData.pvme_staff_id));
             if (!_canUseCommand.size) {
                 await interaction.editReply(`You must ask PvME Staff to pull this report.`);
                 return;
