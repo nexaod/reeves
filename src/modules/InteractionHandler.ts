@@ -42,18 +42,32 @@ export default class InteractionHandler extends EventEmitter {
         return this;
     }
 
+    public checkPermissions(interaction: Interaction): boolean {
+        if (!interaction.inCachedGuild()) return false;
+        if (this.client.util.config.owners.includes(interaction.user.id)) {
+            return true;
+        } else if (interaction.member?.roles.cache.some((role) => role.id === this.client.util.config.pvmeData.pvme_staff_id)) {
+            return true;
+        } else if (interaction.member?.roles.cache.some((role) => role.id === this.client.util.config.pvmeData.pvme_retired_staff_id)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     async exec(interaction: Interaction): Promise<any> {
         if (interaction.isCommand()) {
             try {
                 const command = this.commands.get(interaction.commandName);
                 if (!command) return;
-                // no perms check before run
-                // if (!this.checkPermission(command.permissions, interaction, this.client)) {
-                //     return interaction.reply({
-                //         content: "You don't have the required permissions to use this command!",
-                //         ephemeral: true,
-                //     });
-                // }
+                if (command.permissions) {
+                    const _perms = this.checkPermissions(interaction);
+                    if (!_perms) {
+                        if (interaction.isRepliable() || interaction.isChatInputCommand()) {
+                            return await interaction.reply({ content: 'You do not have permissions to run this command, please ask PvME Staff or TXJ to run this command.', ephemeral: true });
+                        }
+                    }
+                }
                 this.client.logger.log({
                     handler: this.constructor.name,
                     message: `Executing Command ${command.name}`,
@@ -72,7 +86,7 @@ export default class InteractionHandler extends EventEmitter {
                 this.client.logger.error({
                     handler: this.constructor.name,
                     message: 'Something errored!',
-                    error: error,
+                    error: error.stack,
                 });
 
                 if (interaction.isRepliable() || interaction.isChatInputCommand()) {
