@@ -44,15 +44,19 @@ export default class InteractionHandler extends EventEmitter {
 
     public checkPermissions(interaction: Interaction): boolean {
         if (!interaction.inCachedGuild()) return false;
-        if (this.client.util.config.owners.includes(interaction.user.id)) {
-            return true;
-        } else if (interaction.member?.roles.cache.some((role) => role.id === this.client.util.config.pvmeData.pvme_staff_id)) {
-            return true;
-        } else if (interaction.member?.roles.cache.some((role) => role.id === this.client.util.config.pvmeData.pvme_retired_staff_id)) {
-            return true;
-        } else {
-            return false;
-        }
+        // // const _check = this.client.util.config.pvmeData.permitted_roles.map((role_id) => {
+        // //     const _test = interaction.member?.roles.cache.some((role) => role.id === role_id);
+        // //     console.log(role_id, 'lol', _test);
+        // // });
+        // if (_check.length > 0) {
+        //     return true;
+        // } else {
+        //     return false;
+        // }
+        if (interaction.member?.roles.cache.some((role) => role.id === this.client.util.config.pvmeData.permitted_roles[0])) return true;
+        else if (interaction.member?.roles.cache.some((role) => role.id === this.client.util.config.pvmeData.permitted_roles[1])) return true;
+        else if (interaction.member?.roles.cache.some((role) => role.id === this.client.util.config.pvmeData.permitted_roles[2])) return true;
+        else return false;
     }
 
     async exec(interaction: Interaction): Promise<any> {
@@ -60,12 +64,18 @@ export default class InteractionHandler extends EventEmitter {
             try {
                 const command = this.commands.get(interaction.commandName);
                 if (!command) return;
-                if (command.permissions) {
+                if (command.permissions === 'SENIOR_EDITORS') {
                     const _perms = this.checkPermissions(interaction);
                     if (!_perms) {
-                        if (interaction.isRepliable() || interaction.isChatInputCommand()) {
-                            return await interaction.reply({ content: 'You do not have permissions to run this command, please ask PvME Staff or TXJ to run this command.', ephemeral: true });
+                        if (interaction.isRepliable()) {
+                            this.client.logger.log({ message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username} }`, handler: this.constructor.name });
+                            return await interaction.reply({ content: 'You do not have permissions to run this command, please ask Senior Editor or TXJ to run this command.', ephemeral: true });
                         }
+                    }
+                } else if (command.permissions === 'OWNER') {
+                    if (interaction.isRepliable() && !this.client.util.config.owners.includes(interaction.user.id)) {
+                        this.client.logger.log({ message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username} }`, handler: this.constructor.name });
+                        return await interaction.reply({ content: 'You do not have permissions to run this command. This incident has been logged.', ephemeral: true });
                     }
                 }
                 this.client.logger.log({
@@ -89,7 +99,7 @@ export default class InteractionHandler extends EventEmitter {
                     error: error.stack,
                 });
 
-                if (interaction.isRepliable() || interaction.isChatInputCommand()) {
+                if (interaction.isRepliable()) {
                     await interaction.editReply({ embeds: [embed] }).catch((error: unknown) => this.emit('error', error));
                 } else {
                     this.emit('error', error);

@@ -13,7 +13,7 @@ export default class Mastery extends BotInteraction {
     }
 
     get permissions() {
-        return 'staff';
+        return 'SENIOR_EDITORS';
     }
 
     get slashData() {
