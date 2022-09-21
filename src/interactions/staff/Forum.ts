@@ -27,6 +27,15 @@ export default class Forum extends BotInteraction {
                     .addStringOption((option) => option.setName('body').setDescription('The body of the post.').setRequired(true))
                     .addChannelOption((option) => option.setName('channel').setDescription('The Forum channel to post inside').setRequired(true))
                     .addAttachmentOption((option) => option.setName('image').setDescription('The image of the post.').setRequired(false))
+            )
+            .addSubcommand((subcommand) =>
+                subcommand
+                    .setName('edit')
+                    .setDescription('Edit a Forum Post')
+                    .addChannelOption((option) => option.setName('post_channel').setDescription('The Forum channel search for the edit inside').setRequired(true))
+                    .addStringOption((option) => option.setName('post_id').setDescription('The post ID to edit.').setRequired(true))
+                    .addStringOption((option) => option.setName('message').setDescription('The new message to edit.').setRequired(true))
+                    .addAttachmentOption((option) => option.setName('image').setDescription('The image attachment for the post.').setRequired(false))
             );
     }
 
@@ -34,41 +43,104 @@ export default class Forum extends BotInteraction {
         return string.length > max ? string.slice(0, max) : string;
     }
 
-    async _create(): Promise<void> {
-        return void 0;
+    private get _edit_success(): EmbedBuilder {
+        return new EmbedBuilder()
+            .setColor(0x00ff00)
+            .setDescription(`Forum post edited successfully.`)
+            .setTimestamp()
+            .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
+    }
+
+    private get _edit_failure(): EmbedBuilder {
+        return new EmbedBuilder()
+            .setColor(0xff0000)
+            .setDescription(`**FAILED** I am missing permissions.\nForum post is not editable.`)
+            .setTimestamp()
+            .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
+    }
+
+    private get _create_failure(): EmbedBuilder {
+        return new EmbedBuilder()
+            .setColor(0xff0000)
+            .setDescription(`**FAILED** I am missing permissions.`)
+            .setTimestamp()
+            .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
     }
 
     async run(interaction: ChatInputCommandInteraction) {
         if (!interaction.inCachedGuild() && !interaction.isChatInputCommand()) return;
-        const _title = interaction.options.getString('title', true);
-        const _forum = interaction.options.getChannel('channel', true);
-        const _body = interaction.options.getString('body', true);
-        const _image = interaction.options.getAttachment('image', false);
-        const _non_forum_channel_embed = new EmbedBuilder()
-            .setColor(this.client.color)
-            .setDescription(`**${_forum}** is not a forum channel.`)
-            .setTimestamp()
-            .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
-        await interaction.deferReply({ ephemeral: false });
-        if (_forum.type !== 15) return interaction.editReply({ embeds: [_non_forum_channel_embed] });
+        const _subcommand = interaction.options.getSubcommand(true);
+        if (_subcommand === 'edit') {
+            await interaction.deferReply({ ephemeral: false });
+            const _edit_post_channel = interaction.options.getChannel('post_channel', true);
+            const _edit_post_id = interaction.options.getString('post_id', true);
+            const _edit_post_message = interaction.options.getString('message', true);
+            const _cached_channel = await interaction.guild?.channels.cache.get(_edit_post_channel.id)?.fetch(true);
+            const _image = interaction.options.getAttachment('image', false);
 
-        const _success_embed = new EmbedBuilder()
-            .setColor(this.client.color)
-            .setDescription(`Forum post **${_title}** created successfully inside of **${_forum}**.`)
-            .setTimestamp()
-            .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
-        try {
-            const _channelData = interaction.guild?.channels.cache.get(_forum.id);
-            if (_channelData?.type === ChannelType.GuildForum) {
-                _channelData.threads.create({
-                    name: _title,
-                    autoArchiveDuration: 10080,
-                    message: _image ? { content: _body, files: [_image ?? null] } : { content: _body },
-                });
+            if (_cached_channel?.type === ChannelType.GuildForum) {
+                const _cached_threads = await _cached_channel.threads.fetch(_edit_post_id);
+                _cached_threads?.archived ? _cached_threads.setArchived(false) : void 0;
+                const _cached_messaged = await _cached_threads?.messages.fetch(_edit_post_id);
+                _cached_messaged
+                    ?.edit(_image ? { content: _edit_post_message, files: [_image ?? null] } : { content: _edit_post_message })
+                    .then(() => {
+                        return interaction.editReply({ embeds: [this._edit_success] });
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                        return interaction.editReply({ embeds: [this._edit_failure] });
+                    });
+            } else {
+                const _non_forum_channel_embed = new EmbedBuilder()
+                    .setColor(this.client.color)
+                    .setDescription(`**${_cached_channel?.name}** is not a forum channel.`)
+                    .setTimestamp()
+                    .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
+                return interaction.editReply({ embeds: [_non_forum_channel_embed] });
             }
-            await interaction.editReply({ embeds: [_success_embed] });
-        } catch (error) {
-            await interaction.editReply({ content: 'I was unable to create a forum post for you.' });
+            // return interaction.editReply({ embeds: [this._edit_success] });
+        } else if (_subcommand === 'create') {
+            const _title = interaction.options.getString('title', true);
+            const _forum = interaction.options.getChannel('channel', true);
+            const _body = interaction.options.getString('body', true);
+            const _image = interaction.options.getAttachment('image', false);
+
+            // Send message if the channel requested is not a forum channel.
+            const _non_forum_channel_embed = new EmbedBuilder()
+                .setColor(this.client.color)
+                .setDescription(`**${_forum}** is not a forum channel.`)
+                .setTimestamp()
+                .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
+            await interaction.deferReply({ ephemeral: false });
+            if (_forum.type !== ChannelType.GuildForum) return interaction.editReply({ embeds: [_non_forum_channel_embed] });
+
+            // Handle creation of forum posts
+            const _success_embed = new EmbedBuilder()
+                .setColor(this.client.color)
+                .setDescription(`Forum post **${_title}** created successfully inside of **${_forum}**.`)
+                .setTimestamp()
+                .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
+
+            const _cached_channel = interaction.guild?.channels.cache.get(_forum.id);
+
+            if (_cached_channel?.type === ChannelType.GuildForum && interaction.commandName) {
+                _cached_channel.threads
+                    .create({
+                        name: _title,
+                        autoArchiveDuration: 10080,
+                        message: _image ? { content: _body, files: [_image ?? null] } : { content: _body },
+                    })
+                    .then((call) => {
+                        console.log(call);
+                        interaction.editReply({ embeds: [_success_embed] });
+                        return;
+                    })
+                    .catch(() => {
+                        interaction.editReply({ embeds: [this._create_failure] });
+                        return;
+                    });
+            }
         }
     }
 }
