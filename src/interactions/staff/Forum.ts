@@ -32,7 +32,7 @@ export default class Forum extends BotInteraction {
                 subcommand
                     .setName('edit')
                     .setDescription('Edit a Forum Post')
-                    .addChannelOption((option) => option.setName('post_channel').setDescription('The Forum channel search for the edit inside').setRequired(true))
+                    .addChannelOption((option) => option.setName('forum_channel').setDescription('The Forum channel search for the edit inside').setRequired(true))
                     .addStringOption((option) => option.setName('post_id').setDescription('The post ID to edit.').setRequired(true))
                     .addStringOption((option) => option.setName('message').setDescription('The new message to edit.').setRequired(true))
                     .addAttachmentOption((option) => option.setName('image').setDescription('The image attachment for the post.').setRequired(false))
@@ -71,16 +71,16 @@ export default class Forum extends BotInteraction {
         const _subcommand = interaction.options.getSubcommand(true);
         if (_subcommand === 'edit') {
             await interaction.deferReply({ ephemeral: false });
-            const _edit_post_channel = interaction.options.getChannel('post_channel', true);
+            const _edit_forum_channel = interaction.options.getChannel('forum_channel', true);
             const _edit_post_id = interaction.options.getString('post_id', true);
             const _edit_post_message = interaction.options.getString('message', true);
-            const _cached_channel = await interaction.guild?.channels.cache.get(_edit_post_channel.id)?.fetch(true);
+            const _cached_channel = await interaction.guild?.channels.cache.get(_edit_forum_channel.id)?.fetch(true);
             const _image = interaction.options.getAttachment('image', false);
 
             if (_cached_channel?.type === ChannelType.GuildForum) {
-                const _cached_threads = await _cached_channel.threads.fetch(_edit_post_id);
-                _cached_threads?.archived && _cached_threads ? _cached_threads.setArchived(false) : void 0; // Unarchive post if its closed forcefully
-                const _cached_message = await _cached_threads?.messages.fetch(_edit_post_id);
+                const _cached_thread_post = await _cached_channel.threads.fetch(_edit_post_id);
+                _cached_thread_post?.archived && _cached_thread_post ? _cached_thread_post.setArchived(false) : void 0; // Unarchive post if its closed forcefully
+                const _cached_message = await _cached_thread_post?.messages.fetch(_edit_post_id);
                 if (_cached_message && !_cached_message.editable) {
                     return interaction.editReply({ embeds: [this._edit_failure_another_user] });
                 }
@@ -89,7 +89,7 @@ export default class Forum extends BotInteraction {
                     .then(() => {
                         const _edit_success = new EmbedBuilder()
                             .setColor(0x00ff00)
-                            .setDescription(`Forum post **${_cached_message.channel.name}** in forum **${_cached_threads?.name}** edited successfully.`)
+                            .setDescription(`Forum post **${_cached_thread_post}** edited successfully inside of **${_edit_forum_channel}**.`)
                             .setTimestamp()
                             .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
                         return interaction.editReply({ embeds: [_edit_success] });
@@ -138,7 +138,6 @@ export default class Forum extends BotInteraction {
                         message: _image ? { content: _body, files: [_image ?? null] } : { content: _body },
                     })
                     .then((call) => {
-                        console.log(call);
                         interaction.editReply({ embeds: [_success_embed] });
                         return;
                     })
