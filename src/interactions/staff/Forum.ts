@@ -43,18 +43,17 @@ export default class Forum extends BotInteraction {
         return string.length > max ? string.slice(0, max) : string;
     }
 
-    private get _edit_success(): EmbedBuilder {
-        return new EmbedBuilder()
-            .setColor(0x00ff00)
-            .setDescription(`Forum post edited successfully.`)
-            .setTimestamp()
-            .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
-    }
-
     private get _edit_failure(): EmbedBuilder {
         return new EmbedBuilder()
             .setColor(0xff0000)
             .setDescription(`**FAILED** I am missing permissions.\nForum post is not editable.`)
+            .setTimestamp()
+            .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
+    }
+    private get _edit_failure_another_user(): EmbedBuilder {
+        return new EmbedBuilder()
+            .setColor(0xff0000)
+            .setDescription(`**FAILED** This message is not posted by the bot.`)
             .setTimestamp()
             .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
     }
@@ -80,15 +79,22 @@ export default class Forum extends BotInteraction {
 
             if (_cached_channel?.type === ChannelType.GuildForum) {
                 const _cached_threads = await _cached_channel.threads.fetch(_edit_post_id);
-                _cached_threads?.archived ? _cached_threads.setArchived(false) : void 0;
-                const _cached_messaged = await _cached_threads?.messages.fetch(_edit_post_id);
-                _cached_messaged
+                _cached_threads?.archived && _cached_threads ? _cached_threads.setArchived(false) : void 0; // Unarchive post if its closed forcefully
+                const _cached_message = await _cached_threads?.messages.fetch(_edit_post_id);
+                if (_cached_message && !_cached_message.editable) {
+                    return interaction.editReply({ embeds: [this._edit_failure_another_user] });
+                }
+                _cached_message
                     ?.edit(_image ? { content: _edit_post_message, files: [_image ?? null] } : { content: _edit_post_message })
                     .then(() => {
-                        return interaction.editReply({ embeds: [this._edit_success] });
+                        const _edit_success = new EmbedBuilder()
+                            .setColor(0x00ff00)
+                            .setDescription(`Forum post **${_cached_message.channel.name}** in forum **${_cached_threads?.name}** edited successfully.`)
+                            .setTimestamp()
+                            .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
+                        return interaction.editReply({ embeds: [_edit_success] });
                     })
                     .catch((error) => {
-                        console.log(error);
                         return interaction.editReply({ embeds: [this._edit_failure] });
                     });
             } else {
