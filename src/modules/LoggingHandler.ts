@@ -22,6 +22,8 @@ export type BotError = {
     error: unknown;
 };
 
+
+
 export default class BotLogger {
     constructor() {
         this.webhookUrl = webhookUrl ?? null;
