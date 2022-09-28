@@ -42,18 +42,37 @@ export default class InteractionHandler extends EventEmitter {
         return this;
     }
 
+    public checkPermissions(interaction: Interaction): boolean {
+        if (!interaction.inCachedGuild()) return false;
+        const _roles: string[] = Object.values(this.client.util.config.pvmeData);
+        const _check: boolean = _roles.map((id) => interaction.member?.roles.cache.some((role) => role.id === id)).find((e) => e) ?? false;
+        if (!_check && this.client.util.config.owners.includes(interaction.user.id)) return true; // check if this is TXJ calling command without roles
+        return _check;
+        // if (!_check && this.client.util.config.owners.includes(interaction.user.id)) return true; // check if this is TXJ calling command without roles
+        // return _check;
+        // if (interaction.member?.roles.cache.some((role) => role.id === this.client.util.config.pvmeData.permitted_roles[0])) return true;
+        // else if (interaction.member?.roles.cache.some((role) => role.id === this.client.util.config.pvmeData.permitted_roles[1])) return true;
+        // else if (interaction.member?.roles.cache.some((role) => role.id === this.client.util.config.pvmeData.permitted_roles[2])) return true;
+        // else return false;
+    }
+
     async exec(interaction: Interaction): Promise<any> {
-        if (interaction.isCommand()) {
+        if (interaction.isCommand() && interaction.isRepliable() && interaction.inCachedGuild()) {
             try {
                 const command = this.commands.get(interaction.commandName);
                 if (!command) return;
-                // no perms check before run
-                // if (!this.checkPermission(command.permissions, interaction, this.client)) {
-                //     return interaction.reply({
-                //         content: "You don't have the required permissions to use this command!",
-                //         ephemeral: true,
-                //     });
-                // }
+                if (command.permissions === 'SENIOR_EDITORS') {
+                    const _perms = this.checkPermissions(interaction);
+                    if (interaction.isRepliable() && !_perms) {
+                        this.client.logger.log({ message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username} }`, handler: this.constructor.name });
+                        return await interaction.reply({ content: 'You do not have permissions to run this command, please ask Senior Editor or TXJ to run this command.', ephemeral: true });
+                    }
+                } else if (command.permissions === 'OWNER') {
+                    if (interaction.isRepliable() && !this.client.util.config.owners.includes(interaction.user.id)) {
+                        this.client.logger.log({ message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username} }`, handler: this.constructor.name });
+                        return await interaction.reply({ content: 'You do not have permissions to run this command. This incident has been logged.', ephemeral: true });
+                    }
+                }
                 this.client.logger.log({
                     handler: this.constructor.name,
                     message: `Executing Command ${command.name}`,
@@ -72,14 +91,16 @@ export default class InteractionHandler extends EventEmitter {
                 this.client.logger.error({
                     handler: this.constructor.name,
                     message: 'Something errored!',
-                    error: error,
+                    error: error.stack,
                 });
+                interaction.editReply({ embeds: [embed] });
 
-                if (interaction.isRepliable() || interaction.isChatInputCommand()) {
-                    await interaction.editReply({ embeds: [embed] }).catch((error: unknown) => this.emit('error', error));
-                } else {
-                    this.emit('error', error);
-                }
+                // if (interaction.isRepliable()) {
+                //     console.log('yes');
+                //     interaction.editReply({ embeds: [embed] });
+                // } else {
+                //     this.emit('error', error);
+                // }
             }
         }
     }

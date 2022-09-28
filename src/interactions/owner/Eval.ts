@@ -1,6 +1,4 @@
-import { ChatInputCommandInteraction } from 'discord.js';
-
-import { EmbedBuilder, ApplicationCommandOptionType } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandStringOption, EmbedBuilder } from 'discord.js';
 // import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 import { inspect } from 'util';
 import BotInteraction from '../../types/BotInteraction';
@@ -18,15 +16,11 @@ export default class Eval extends BotInteraction {
         return 'OWNER';
     }
 
-    get options() {
-        return [
-            {
-                name: 'code',
-                type: ApplicationCommandOptionType.String,
-                description: 'The code you want me to evaluate',
-                required: true,
-            },
-        ];
+    get slashData() {
+        return new SlashCommandBuilder()
+            .setName(this.name)
+            .setDescription(this.description)
+            .addStringOption((option: SlashCommandStringOption) => option.setName('code').setDescription('Evaluate Code from interaction scope.').setRequired(true));
     }
 
     static trim(string: string, max: number): string {
@@ -39,9 +33,9 @@ export default class Eval extends BotInteraction {
         let res;
         try {
             res = await eval(code);
-            res = inspect(res, { depth: 0 });
+            res = inspect(res, { depth: 2 });
         } catch (error) {
-            res = inspect(error, { depth: 0 });
+            res = inspect(error, { depth: 2 });
         }
         const embed = new EmbedBuilder()
             .setColor(this.client.color)

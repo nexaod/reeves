@@ -8,7 +8,7 @@ import UtilityHandler from './modules/UtilityHandler';
 export default interface Bot extends Client {
     color: number;
     commandsRun: number;
-    util?: any;
+    util: UtilityHandler;
     quitting?: boolean;
     location?: string;
     logger: BotLogger;
@@ -30,7 +30,7 @@ export default class Bot extends Client {
         this.events = new EventHandler(this).build();
 
         process.on('unhandledRejection', (err: any): void => {
-            this.logger.error({ message: `UnhandledRejection from Process`, error: err });
+            this.logger.error({ message: `UnhandledRejection from Process`, error: err.stack });
         });
 
         ['beforeExit', 'SIGUSR1', 'SIGUSR2', 'SIGINT', 'SIGTERM'].map((event: string) => process.once(event, this.exit.bind(this)));

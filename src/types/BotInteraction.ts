@@ -1,4 +1,4 @@
-import { ApplicationCommandOption } from 'discord.js';
+import { ApplicationCommandOption, SlashCommandBuilder, SlashCommandSubcommandsOnlyBuilder } from 'discord.js';
 // import { APIApplicationCommandOptionBase, APIApplicationCommandOption } from 'discord-api-types/v10';
 // import { ApplicationCommandOption } from 'discord.js'
 import * as uuid from 'uuid';
@@ -11,22 +11,14 @@ export default interface BotInteraction {
     category: string;
     get name(): string;
     get description(): string;
-    get options(): any[] | null;
+    get slashData(): SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder | Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>;
     get permissions(): ApplicationCommandOption[] | string;
-    run(args: unknown): Promise<void>;
+    run(args: unknown): Promise<any>;
 }
 
 export default class BotInteraction {
     constructor(client: Bot) {
         this.uid = uuid.v4();
         this.client = client;
-    }
-
-    public get interactionData() {
-        return {
-            name: this.name,
-            description: this.description,
-            options: this.options,
-        };
     }
 }

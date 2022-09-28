@@ -3,19 +3,21 @@
     "version": "1.0.0",
     "description": "A Music bot made from indomitable and ESNext",
     "scripts": {
+        "build": "tsc --watch",
         "prestart": "tsc",
         "start": "node ./dist/index.js"
     },
     "author": "TXJ",
     "license": "MIT",
     "dependencies": {
+        "@sapphire/discord.js-utilities": "^5.1.0-pr-434.549335e.0",
         "@types/node": "^18.6.5",
         "axios": "^0.24.0",
         "bufferutil": "^4.0.5",
         "cheshire": "github:Deivu/Cheshire#2.0.2",
         "count-interval": "^1.0.1",
         "discord-api-types": "^0.37.8",
-        "discord.js": "^14.3.0",
+        "discord.js": "^14.6.0-dev.1664151184-3c231ae.0",
         "discord.js-pages": "^1.4.4",
         "dotenv": "^16.0.2",
         "indomitable": "^2.0.2",
