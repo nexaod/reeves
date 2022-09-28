@@ -178,7 +178,7 @@ export default class Forum extends BotInteraction {
                 const __post = await _get_cached_channel.threads.create({
                     name: post.name,
                     autoArchiveDuration: 10080,
-                    message: { content: 'Edit this post with `/forum edit`' },
+                    message: { content: 'This post has no message, Edit this post with `/forum edit`' },
                 });
                 this._posts_converted.push(new Object({ name: __post.name, old_id: old_post_id, new_id: __post.id }));
                 _delete_old_posts ? post.delete() : void 0;
