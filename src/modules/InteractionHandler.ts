@@ -57,6 +57,7 @@ export default class InteractionHandler extends EventEmitter {
     }
 
     async exec(interaction: Interaction): Promise<any> {
+
         if (interaction.isCommand() && interaction.isRepliable() && interaction.inCachedGuild()) {
             try {
                 const command = this.commands.get(interaction.commandName);
@@ -77,7 +78,7 @@ export default class InteractionHandler extends EventEmitter {
                     handler: this.constructor.name,
                     message: `Executing Command ${command.name}`,
                     uid: `(@${command.uid})`,
-                    args: interaction.options.data.map((d) => d.value).toString() ?? '',
+                    args: interaction.options.data ?? '',
                 });
                 await command.run(interaction);
                 this.client.commandsRun++;

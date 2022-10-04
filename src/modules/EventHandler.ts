@@ -13,7 +13,7 @@ export default class EventHandler {
         this.client = client;
         this.built = false;
         client.on('shardDisconnect', (event, id) => this.client.logger.log({ message: `Shard ${id} Shard Disconnecting`, handler: this.constructor.name }));
-        client.on('shardReconnecting', (id) => this.client.logger.log({ message: `Shard ${id} Shard Reconnecting`, handler: this.constructor.name }));
+        // client.on('shardReconnecting', (id) => this.client.logger.log({ message: `Shard ${id} Shard Reconnecting`, handler: this.constructor.name }));
         client.on('shardResumed', (id, rep) => this.client.logger.log({ message: `Shard ${id} Shard Resume | ${rep} events replayed`, handler: this.constructor.name }));
         client.on('shardReady', (id) => this.client.logger.log({ message: `Shard ${id} | Shard Ready`, handler: this.constructor.name, uid: `Internal Cluster` }));
     }

@@ -4,6 +4,7 @@
     "description": "A Music bot made from indomitable and ESNext",
     "scripts": {
         "build": "tsc --watch",
+        "dev": "ts-node index.ts",
         "prestart": "tsc",
         "start": "node ./dist/index.js"
     },
