@@ -16,7 +16,7 @@ export default class Forum extends BotInteraction {
     }
 
     get permissions() {
-        return 'SENIOR_EDITORS';
+        return 'Senior Editor';
     }
 
     get slashData() {
@@ -29,14 +29,16 @@ export default class Forum extends BotInteraction {
                     .setDescription('Creates a Forum Post')
                     .addStringOption((option) => option.setName('title').setDescription('The title of the post.').setRequired(true))
                     .addStringOption((option) => option.setName('body').setDescription('The body of the post.').setRequired(true))
-                    .addChannelOption((option) => option.setName('channel').setDescription('The Forum channel to post inside').setRequired(true))
+                    .addChannelOption((option) => option.addChannelTypes(ChannelType.GuildForum).setName('channel').setDescription('The Forum channel to post inside').setRequired(true))
                     .addAttachmentOption((option) => option.setName('image').setDescription('The image of the post.').setRequired(false))
             )
             .addSubcommand((subcommand) =>
                 subcommand
                     .setName('edit')
                     .setDescription('Edit a Forum Post')
-                    .addChannelOption((option) => option.setName('forum_channel').setDescription('The Forum channel search for the edit inside').setRequired(true))
+                    .addChannelOption((option) =>
+                        option.addChannelTypes(ChannelType.GuildForum).setName('forum_channel').setDescription('The Forum channel search for the edit inside').setRequired(true)
+                    )
                     .addStringOption((option) => option.setName('post_id').setDescription('The post ID to edit.').setRequired(true))
                     .addStringOption((option) => option.setName('message').setDescription('The new message to edit.').setRequired(true))
                     .addAttachmentOption((option) => option.setName('image').setDescription('The image attachment for the post.').setRequired(false))
@@ -45,7 +47,9 @@ export default class Forum extends BotInteraction {
                 subcommand
                     .setName('convert')
                     .setDescription('Convert User Forum Post(s) to the Bot')
-                    .addChannelOption((option) => option.setName('forum_channel').setDescription('The Forum channel search for the conversion').setRequired(true))
+                    .addChannelOption((option) =>
+                        option.addChannelTypes(ChannelType.GuildForum).setName('forum_channel').setDescription('The Forum channel search for the conversion').setRequired(true)
+                    )
                     .addBooleanOption((option) => option.setName('delete_posts').setDescription('Delete the old posts').setRequired(true))
                     .addBooleanOption((option) => option.setName('ignore_archived').setDescription('Ignore archived posts').setRequired(true))
             );
@@ -222,11 +226,7 @@ export default class Forum extends BotInteraction {
         if (_forum.type !== ChannelType.GuildForum) return interaction.editReply({ embeds: [_non_forum_channel_embed] });
 
         // Handle creation of forum posts
-        const _success_embed = new EmbedBuilder()
-            .setColor(this.client.color)
-            .setDescription(`Forum post **${_title}** created successfully inside of **${_forum}**.`)
-            .setTimestamp()
-            .setFooter({ text: this.client.user?.username ?? 'dejj', iconURL: this.client.user?.displayAvatarURL() });
+        const _success_embed = new EmbedBuilder().setColor(this.client.color).setDescription(`Forum post **${_title}** created successfully inside of **${_forum}**.`).setTimestamp();
 
         const _cached_channel = interaction.guild?.channels.cache.get(_forum.id);
 
@@ -237,8 +237,8 @@ export default class Forum extends BotInteraction {
                     autoArchiveDuration: 10080,
                     message: _image ? { content: _body, files: [_image ?? null] } : { content: _body },
                 })
-                .then((call) => {
-                    interaction.editReply({ embeds: [_success_embed] });
+                .then((___post) => {
+                    interaction.editReply({ embeds: [_success_embed.setFooter({ text: `Post ID: ${___post.id}`, iconURL: this.client.user?.displayAvatarURL() })] });
                     return;
                 })
                 .catch(() => {

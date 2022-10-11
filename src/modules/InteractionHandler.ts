@@ -35,25 +35,37 @@ export default class InteractionHandler extends EventEmitter {
                     const Command: BotInteraction = new interaction.default(this.client);
                     Command.category = directory.name.charAt(0).toUpperCase() + directory.name.substring(1);
                     this.commands.set(Command.name, Command);
-                    this.client.logger.log({ message: `Command '${Command.name}' loaded`, handler: this.constructor.name, uid: `(@${Command.uid})` });
+                    this.client.logger.log({ message: `Command '${Command.name}' loaded`, handler: this.constructor.name, uid: `(@${Command.uid})` }, false);
                 });
             }
         }
         return this;
     }
 
-    public checkPermissions(interaction: Interaction): boolean {
+    // // check to see if the user has at least one of the roles from `pvmeData` in config file
+    // public checkPermissions(interaction: Interaction, role_name_or_id?: string[]): boolean {
+    //     if (!interaction.inCachedGuild()) return false;
+    //     const _roles: string[] = Object.values(this.client.util.config.pvmeData);
+    //     const _check: boolean = _roles.map((id) => interaction.member?.roles.cache.some((role) => role_name_or_id?.includes(role.id))).find((e) => e) ?? false;
+    //     if (!_check && this.client.util.config.owners.includes(interaction.user.id)) return true; // check if this is TXJ and skip perms check
+    //     return _check;
+    // }
+
+    // This method will check a `string[]` for name strings
+    public checkPermissionName(interaction: Interaction, role_name: string[]): boolean {
         if (!interaction.inCachedGuild()) return false;
-        const _roles: string[] = Object.values(this.client.util.config.pvmeData);
-        const _check: boolean = _roles.map((id) => interaction.member?.roles.cache.some((role) => role.id === id)).find((e) => e) ?? false;
-        if (!_check && this.client.util.config.owners.includes(interaction.user.id)) return true; // check if this is TXJ calling command without roles
-        return _check;
-        // if (!_check && this.client.util.config.owners.includes(interaction.user.id)) return true; // check if this is TXJ calling command without roles
-        // return _check;
-        // if (interaction.member?.roles.cache.some((role) => role.id === this.client.util.config.pvmeData.permitted_roles[0])) return true;
-        // else if (interaction.member?.roles.cache.some((role) => role.id === this.client.util.config.pvmeData.permitted_roles[1])) return true;
-        // else if (interaction.member?.roles.cache.some((role) => role.id === this.client.util.config.pvmeData.permitted_roles[2])) return true;
-        // else return false;
+        if (this.client.util.config.owners.includes(interaction.user.id)) return true; // if any owner bypass perms check
+        const _checkRoleName: boolean[] = role_name.map((role_string) => interaction.member.roles.cache.some((role) => role.name === role_string));
+        const _containsRole: boolean = _checkRoleName.some((role) => role === true);
+        return _containsRole;
+    }
+
+    public checkPermissionID(interaction: Interaction, role_id: string[]): boolean {
+        if (!interaction.inCachedGuild()) return false;
+        if (this.client.util.config.owners.includes(interaction.user.id)) return true; // if any owner bypass perms check
+        const _checkRoleID: boolean[] = role_id.map((role_id) => interaction.member.roles.cache.some((role) => role.id === role_id));
+        const _containsRole: boolean = _checkRoleID.some((role) => role === true);
+        return _containsRole;
     }
 
     async exec(interaction: Interaction): Promise<any> {
@@ -61,24 +73,52 @@ export default class InteractionHandler extends EventEmitter {
             try {
                 const command = this.commands.get(interaction.commandName);
                 if (!command) return;
-                if (command.permissions === 'SENIOR_EDITORS') {
-                    const _perms = this.checkPermissions(interaction);
-                    if (interaction.isRepliable() && !_perms) {
-                        this.client.logger.log({ message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username} }`, handler: this.constructor.name });
-                        return await interaction.reply({ content: 'You do not have permissions to run this command, please ask Senior Editor or TXJ to run this command.', ephemeral: true });
-                    }
-                } else if (command.permissions === 'OWNER') {
-                    if (interaction.isRepliable() && !this.client.util.config.owners.includes(interaction.user.id)) {
-                        this.client.logger.log({ message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username} }`, handler: this.constructor.name });
-                        return await interaction.reply({ content: 'You do not have permissions to run this command. This incident has been logged.', ephemeral: true });
-                    }
+                switch (command.permissions) {
+                    case 'Senior Editor':
+                        if (
+                            interaction.isRepliable() &&
+                            !this.checkPermissionID(interaction, [this.client.util.config.pvmeData.senior_editors_role_id, this.client.util.config.pvmeData.zero_ken_role_id])
+                        ) {
+                            this.client.logger.log(
+                                { message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username} }`, handler: this.constructor.name },
+                                true
+                            );
+                            return await interaction.reply({ content: 'You do not have permissions to run this command, please ask Senior Editor or TXJ to run this command.', ephemeral: true });
+                        }
+                        break;
+                    case 'Contributor':
+                        if (interaction.isRepliable() && !this.checkPermissionID(interaction, [this.client.util.config.pvmeData.contributor_role_id])) {
+                            this.client.logger.log(
+                                { message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username} }`, handler: this.constructor.name },
+                                true
+                            );
+                            return await interaction.reply({ content: 'You do not have permissions to run this command. This incident has been logged.', ephemeral: true });
+                        }
+                        break;
+                    case 'OWNER':
+                        if (interaction.isRepliable() && !this.client.util.config.owners.includes(interaction.user.id)) {
+                            this.client.logger.log(
+                                {
+                                    message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username}, channel: ${interaction.channel} }`,
+                                    handler: this.constructor.name,
+                                },
+                                true
+                            );
+                            return await interaction.reply({ content: 'You do not have permissions to run this command. This incident has been logged.', ephemeral: true });
+                        }
+                        break;
+                    default:
+                        break;
                 }
-                this.client.logger.log({
-                    handler: this.constructor.name,
-                    message: `Executing Command ${command.name}`,
-                    uid: `(@${command.uid})`,
-                    args: interaction.options.data.map((d) => d.value).toString() ?? '',
-                });
+                this.client.logger.log(
+                    {
+                        handler: this.constructor.name,
+                        user: `${interaction.user.username} | ${interaction.user.id}`,
+                        message: `Executing Command ${command.name}`,
+                        uid: `(@${command.uid})`,
+                    },
+                    true
+                );
                 await command.run(interaction);
                 this.client.commandsRun++;
             } catch (error: any) {
@@ -94,13 +134,6 @@ export default class InteractionHandler extends EventEmitter {
                     error: error.stack,
                 });
                 interaction.editReply({ embeds: [embed] });
-
-                // if (interaction.isRepliable()) {
-                //     console.log('yes');
-                //     interaction.editReply({ embeds: [embed] });
-                // } else {
-                //     this.emit('error', error);
-                // }
             }
         }
     }

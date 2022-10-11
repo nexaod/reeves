@@ -11,6 +11,7 @@ export type BotLog = {
     uid?: string;
     args?: unknown;
     handler?: string;
+    user?: string;
     message: string;
     error?: unknown;
 };
@@ -40,10 +41,9 @@ export default class BotLogger {
         return isMaster ? 'Parent' : process.env.CLUSTER_ID;
     }
 
-    public log(incoming: BotLog): void {
+    public log(incoming: BotLog, webhook_enabled: boolean): void {
         const _format: string = JSON.stringify(incoming, null, 2);
-
-        this.webhook.send(this.webhook_formatter(incoming));
+        webhook_enabled ? this.webhook.send(this.webhook_formatter(incoming)) : void 0;
         return console.log('[INFO]', _format);
     }
 
