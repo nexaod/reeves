@@ -18,7 +18,7 @@
         "cheshire": "github:Deivu/Cheshire#2.0.2",
         "count-interval": "^1.0.1",
         "discord-api-types": "^0.37.8",
-        "discord.js": "^14.6.0-dev.1664151184-3c231ae.0",
+        "discord.js": "^14.6.0",
         "discord.js-pages": "^1.4.4",
         "dotenv": "^16.0.2",
         "indomitable": "^2.0.2",
