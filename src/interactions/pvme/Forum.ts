@@ -16,7 +16,7 @@ export default class Forum extends BotInteraction {
     }
 
     get permissions() {
-        return 'SENIOR_EDITORS';
+        return 'Senior Editor';
     }
 
     get slashData() {

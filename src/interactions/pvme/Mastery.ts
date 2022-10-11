@@ -13,7 +13,7 @@ export default class Mastery extends BotInteraction {
     }
 
     get permissions() {
-        return 'SENIOR_EDITORS';
+        return 'Senior Editor';
     }
 
     get slashData() {
@@ -22,17 +22,6 @@ export default class Mastery extends BotInteraction {
             .setDescription(this.description)
             .addBooleanOption((option: SlashCommandBooleanOption) => option.setName('cache').setDescription('Force Fetch cache data').setRequired(true));
     }
-
-    // get options() {
-    //     return [
-    //         {
-    //             name: 'code',
-    //             type: ApplicationCommandOptionType.String,
-    //             description: 'The code you want me to evaluate',
-    //             required: true,
-    //         },
-    //     ];
-    // }
 
     private async memberCache(option: boolean | null): Promise<Guild | undefined> {
         if (option) {
