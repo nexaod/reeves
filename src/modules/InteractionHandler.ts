@@ -92,7 +92,7 @@ export default class InteractionHandler extends EventEmitter {
                                 { message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username} }`, handler: this.constructor.name },
                                 true
                             );
-                            return await interaction.reply({ content: 'You do not have permissions to run this command, please ask Senior Editor or TXJ to run this command.', ephemeral: true });
+                            return await interaction.reply({ content: 'You do not have permissions to run this command. This incident has been logged.', ephemeral: true });
                         }
                         break;
                     case 'OWNER':
