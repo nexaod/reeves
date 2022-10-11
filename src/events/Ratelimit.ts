@@ -16,15 +16,18 @@ export default class Ratelimit extends BotEvent {
     }
 
     async run(info: RateLimitData) {
-        this.client.logger.log({
-            handler: this.constructor.name,
-            message:
-                '\n' +
-                `  Route                    : ${info.route}\n` +
-                `  Hash                     : ${info.hash}\n` +
-                `  Max Requests             : ${info.limit}\n` +
-                `  Timeout                  : ${info.timeToReset}ms\n` +
-                `  Global Ratelimit         : ${info.global}`,
-        });
+        this.client.logger.log(
+            {
+                handler: this.constructor.name,
+                message:
+                    '\n' +
+                    `  Route                    : ${info.route}\n` +
+                    `  Hash                     : ${info.hash}\n` +
+                    `  Max Requests             : ${info.limit}\n` +
+                    `  Timeout                  : ${info.timeToReset}ms\n` +
+                    `  Global Ratelimit         : ${info.global}`,
+            },
+            true
+        );
     }
 }

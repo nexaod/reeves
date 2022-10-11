@@ -15,9 +15,12 @@ export default class GuildCreate extends BotEvent {
     }
 
     async run(guild: Guild): Promise<void> {
-        this.client.logger.log({
-            handler: this.constructor.name,
-            message: `Joined guild **${guild.name}** with **${guild.memberCount}** members.`,
-        });
+        this.client.logger.log(
+            {
+                handler: this.constructor.name,
+                message: `Joined guild **${guild.name}** with **${guild.memberCount}** members.`,
+            },
+            true
+        );
     }
 }
