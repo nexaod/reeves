@@ -5,13 +5,13 @@ import Bot from './src/Bot';
 
 if (!process.env.TOKEN) throw new Error('Token Missing');
 
-const { Guilds, GuildMembers, GuildBans, GuildVoiceStates, GuildMessages, GuildMessageReactions } = GatewayIntentBits;
+const { Guilds, GuildMembers, GuildBans, GuildVoiceStates, GuildMessages, GuildMessageReactions, MessageContent } = GatewayIntentBits;
 
 const sharderOptions: IndomitableOptions = {
     clientOptions: {
         // disableMentions: 'everyone',
         // restRequestTimeout: 30000,
-        intents: [Guilds, GuildMembers, GuildBans, GuildVoiceStates, GuildMessages, GuildMessageReactions],
+        intents: [Guilds, GuildMembers, GuildBans, GuildVoiceStates, GuildMessages, GuildMessageReactions, MessageContent],
     },
     client: Bot as any,
     autoRestart: true,
