@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { Message, SlashCommandBuilder } from 'discord.js';
 import BotEvent from '../types/BotEvent.js';
 import { readdirSync } from 'fs';
 import BotInteraction from '../types/BotInteraction';
@@ -16,15 +16,32 @@ export default class MessageCreate extends BotEvent {
         return true;
     }
 
+    static ryChooseMatch = new RegExp(/(?:[^\s('|")]+|(?:'|")[^('|")]*(?:'|"))+/g);
+
     async run(message: Message): Promise<any> {
         if (message.author.bot) return;
         if (!message.inGuild()) return;
         if (this.client.util.config.guildMessageDisabled.includes(message.guild.id)) return;
 
+        // choose ry/choose
+        if (message.content.startsWith(`ry/choose`)) {
+            const choose = message.content.match(MessageCreate.ryChooseMatch)?.slice(1) ?? [];
+            const random = choose ? ~~(choose.length * Math.random()) : 0;
+            this.client.logger.log(
+                {
+                    uid: this.uid,
+                    args: message.content,
+                    message: `${choose[random]}`,
+                },
+                true
+            );
+            return message.reply(choose[random]);
+        }
+
         // boop message
         if (message.content.startsWith(`<@${this.client.user?.id}> boop`)) {
             this.client.commandsRun++;
-            this.client.logger.log({ message: `${message.author.username} booped the bot.`, uid: `(@${this.uid})` });
+            this.client.logger.log({ message: `${message.author.username} booped the bot.`, uid: `(@${this.uid})` }, true);
             return message.reply({ content: '<a:majjnow:1006284731928805496>' });
         }
 
@@ -57,19 +74,33 @@ export default class MessageCreate extends BotEvent {
                 return message.reply({ content: 'Done' });
             }
 
-            let data: any[] = [];
+            let data: SlashCommandBuilder[] = [];
             await this.buildCommands(data);
 
+            // global commands
             if (message.content.match(/global/gi)) {
                 if (!this.client.application) return message.reply({ content: `There is no client.application?` }).catch(() => {});
                 let res = await this.client.application.commands.set(data).catch((e) => e);
                 if (res instanceof Error) return this.client.logger.error({ error: res.stack, handler: this.constructor.name });
-                return message.reply({ content: `Deploying (**${data.length.toLocaleString()}**) slash commands, this could take up to 1 hour` }).catch(() => {});
+                return message
+                    .reply({
+                        content: `Deploying (**${data.length.toLocaleString()}**) slash commands, This could take up to 1 hour.\n\`\`\`diff\n${data
+                            .map((command) => `${command.default_member_permissions === '0' ? '-' : '+'} ${command.name} - '${command.description}'`)
+                            .join('\n')}\n\`\`\``,
+                    })
+                    .catch(() => {});
             }
 
+            // guild commands
             let res = await message.guild.commands.set(data).catch((e) => e);
             if (res instanceof Error) return this.client.logger.error({ error: res.stack, handler: this.constructor.name });
-            return message.reply({ content: `Deploying (**${data.length.toLocaleString()}**) slash commands` }).catch(() => {});
+            return message
+                .reply({
+                    content: `Deploying (**${data.length.toLocaleString()}**) slash commands\n\`\`\`diff\n${data
+                        .map((command) => `${command.default_member_permissions === '0' ? '-' : '+'} ${command.name} - '${command.description}'`)
+                        .join('\n')}\n\`\`\``,
+                })
+                .catch(() => {});
         }
     }
 
