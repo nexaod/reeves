@@ -54,6 +54,7 @@ export default class InteractionHandler extends EventEmitter {
     // This method will check a `string[]` for name strings
     public checkPermissionName(interaction: Interaction, role_name: string[]): boolean {
         if (!interaction.inCachedGuild()) return false;
+        if (this.client.util.config.owners.includes(interaction.user.id)) return true; // if any owner bypass perms check
         const _checkRoleName: boolean[] = role_name.map((role_string) => interaction.member.roles.cache.some((role) => role.name === role_string));
         const _containsRole: boolean = _checkRoleName.some((role) => role === true);
         return _containsRole;
@@ -61,6 +62,7 @@ export default class InteractionHandler extends EventEmitter {
 
     public checkPermissionID(interaction: Interaction, role_id: string[]): boolean {
         if (!interaction.inCachedGuild()) return false;
+        if (this.client.util.config.owners.includes(interaction.user.id)) return true; // if any owner bypass perms check
         const _checkRoleID: boolean[] = role_id.map((role_id) => interaction.member.roles.cache.some((role) => role.id === role_id));
         const _containsRole: boolean = _checkRoleID.some((role) => role === true);
         return _containsRole;
@@ -74,8 +76,8 @@ export default class InteractionHandler extends EventEmitter {
                 switch (command.permissions) {
                     case 'Senior Editor':
                         if (
-                            (interaction.isRepliable() && !this.checkPermissionName(interaction, ['Senior Editor'])) ||
-                            this.checkPermissionID(interaction, [this.client.util.config.pvmeData.zero_ken_role_id])
+                            interaction.isRepliable() &&
+                            !this.checkPermissionID(interaction, [this.client.util.config.pvmeData.senior_editors_role_id, this.client.util.config.pvmeData.zero_ken_role_id])
                         ) {
                             this.client.logger.log(
                                 { message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username} }`, handler: this.constructor.name },
@@ -111,9 +113,9 @@ export default class InteractionHandler extends EventEmitter {
                 this.client.logger.log(
                     {
                         handler: this.constructor.name,
+                        user: `${interaction.user.username} | ${interaction.user.id}`,
                         message: `Executing Command ${command.name}`,
                         uid: `(@${command.uid})`,
-                        args: interaction.options.data ?? '',
                     },
                     true
                 );
