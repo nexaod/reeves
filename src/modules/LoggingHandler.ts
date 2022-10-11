@@ -11,6 +11,7 @@ export type BotLog = {
     uid?: string;
     args?: unknown;
     handler?: string;
+    user?: string;
     message: string;
     error?: unknown;
 };
