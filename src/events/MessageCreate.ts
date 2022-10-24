@@ -23,21 +23,6 @@ export default class MessageCreate extends BotEvent {
         if (!message.inGuild()) return;
         if (this.client.util.config.guildMessageDisabled.includes(message.guild.id)) return;
 
-        // choose ry/choose
-        if (message.content.startsWith(`ry/choose`)) {
-            const choose = message.content.match(MessageCreate.ryChooseMatch)?.slice(1) ?? [];
-            const random = choose ? ~~(choose.length * Math.random()) : 0;
-            this.client.logger.log(
-                {
-                    uid: this.uid,
-                    args: message.content,
-                    message: `${choose[random]}`,
-                },
-                true
-            );
-            return message.reply(choose[random]);
-        }
-
         // boop message
         if (message.content.startsWith(`<@${this.client.user?.id}> boop`)) {
             this.client.commandsRun++;
@@ -79,7 +64,7 @@ export default class MessageCreate extends BotEvent {
 
             // global commands
             if (message.content.match(/global/gi)) {
-                if (!this.client.application) return message.reply({ content: `There is no client.application?` }).catch(() => {});
+                if (!this.client.application) return message.reply({ content: `There is no client.application?` }).catch(() => { });
                 let res = await this.client.application.commands.set(data).catch((e) => e);
                 if (res instanceof Error) return this.client.logger.error({ error: res.stack, handler: this.constructor.name });
                 return message
@@ -88,7 +73,7 @@ export default class MessageCreate extends BotEvent {
                             .map((command) => `${command.default_member_permissions === '0' ? '-' : '+'} ${command.name} - '${command.description}'`)
                             .join('\n')}\n\`\`\``,
                     })
-                    .catch(() => {});
+                    .catch(() => { });
             }
 
             // guild commands
@@ -100,7 +85,7 @@ export default class MessageCreate extends BotEvent {
                         .map((command) => `${command.default_member_permissions === '0' ? '-' : '+'} ${command.name} - '${command.description}'`)
                         .join('\n')}\n\`\`\``,
                 })
-                .catch(() => {});
+                .catch(() => { });
         }
     }
 

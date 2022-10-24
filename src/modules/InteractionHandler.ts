@@ -74,27 +74,6 @@ export default class InteractionHandler extends EventEmitter {
                 const command = this.commands.get(interaction.commandName);
                 if (!command) return;
                 switch (command.permissions) {
-                    case 'Senior Editor':
-                        if (
-                            interaction.isRepliable() &&
-                            !this.checkPermissionID(interaction, [this.client.util.config.pvmeData.senior_editors_role_id, this.client.util.config.pvmeData.zero_ken_role_id])
-                        ) {
-                            this.client.logger.log(
-                                { message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username} }`, handler: this.constructor.name },
-                                true
-                            );
-                            return await interaction.reply({ content: 'You do not have permissions to run this command, please ask Senior Editor or TXJ to run this command.', ephemeral: true });
-                        }
-                        break;
-                    case 'Contributor':
-                        if (interaction.isRepliable() && !this.checkPermissionID(interaction, [this.client.util.config.pvmeData.contributor_role_id])) {
-                            this.client.logger.log(
-                                { message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username} }`, handler: this.constructor.name },
-                                true
-                            );
-                            return await interaction.reply({ content: 'You do not have permissions to run this command. This incident has been logged.', ephemeral: true });
-                        }
-                        break;
                     case 'OWNER':
                         if (interaction.isRepliable() && !this.client.util.config.owners.includes(interaction.user.id)) {
                             this.client.logger.log(
