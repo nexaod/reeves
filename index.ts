@@ -4,6 +4,7 @@ import { Indomitable, IndomitableOptions } from 'indomitable';
 import Bot from './src/Bot';
 
 if (!process.env.TOKEN) throw new Error('Token Missing');
+if (!process.env.ENVIRONMENT) throw new Error('Environment Missing');
 
 const { Guilds, GuildMembers, GuildBans, GuildVoiceStates, GuildMessages, GuildMessageReactions, MessageContent } = GatewayIntentBits;
 
