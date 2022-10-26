@@ -1,10 +1,12 @@
 import * as config from '../../config.json';
 import { EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
 import Bot from '../Bot';
+import Utilities from '../Utils';
 
 export default interface UtilityHandler {
     client: Bot;
     config: typeof config;
+    utilities: typeof Utilities;
     random(array: Array<any>): Array<number>;
     loadingEmbed: EmbedBuilder;
     loadingText: string;
@@ -14,6 +16,7 @@ export default class UtilityHandler {
     constructor(client: Bot) {
         this.client = client;
         this.config = config;
+        this.utilities = Utilities;
         this.random = (array) => array[Math.floor(Math.random() * array.length)];
         this.deleteMessage = this.deleteMessage;
         this.loadingEmbed = new EmbedBuilder().setAuthor({ name: 'Loading...' });
