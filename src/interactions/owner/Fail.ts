@@ -1,13 +1,13 @@
 import BotInteraction from '../../types/BotInteraction';
 import { ChatInputCommandInteraction, SlashCommandBuilder, TextChannel, User, EmbedBuilder } from 'discord.js';
 
-export default class Pass extends BotInteraction {
+export default class Fail extends BotInteraction {
     get name() {
-        return 'pass';
+        return 'fail';
     }
 
     get description() {
-        return 'Records a Trialee Pass';
+        return 'Records a Trialee Fail';
     }
 
     get permissions() {
@@ -26,7 +26,7 @@ export default class Pass extends BotInteraction {
             .addStringOption((option) => option.setName('role').setDescription('Trialee role').addChoices(
                 ...RoleOptions
             ).setRequired(true))
-            .addStringOption((option) => option.setName('gem').setDescription('URL for Challenge Gem').setRequired(true))
+            .addStringOption((option) => option.setName('gem').setDescription('URL for Challenge Gem').setRequired(false))
             .addStringOption((option) => option.setName('comment').setDescription('Comment').setRequired(false));
     }
 
@@ -34,55 +34,27 @@ export default class Pass extends BotInteraction {
         await interaction.deferReply({ ephemeral: true });
         const trialee: User = interaction.options.getUser('trialee', true);
         const role: string = interaction.options.getString('role', true);
-        const gem: string = interaction.options.getString('gem', true);
+        const gem: string | null = interaction.options.getString('gem', false);
         const comment: string | null = interaction.options.getString('comment', false);
 
-        const gemScores = await this.client.channels.fetch(this.client.util.utilities.channels.gemScores) as TextChannel;
         const trialLog = await this.client.channels.fetch(this.client.util.utilities.channels.trialLog) as TextChannel;
 
-        const gemEmbed = new EmbedBuilder()
-            .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() || '' })
-            .setColor(this.client.util.utilities.colours.discord.green)
-            .setImage(gem)
-            .setDescription(`
-            **Status:** ✅
-            **Trialee:** <@${trialee.id}>
-            **Role:** ${this.client.util.utilities.roles[role]}
-            `);
         const logEmbed = new EmbedBuilder()
             .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() || '' })
-            .setColor(this.client.util.utilities.colours.discord.green)
+            .setColor(this.client.util.utilities.colours.discord.red)
             .setDescription(`
-            **Status:** ✅
+            **Status:** ❌
             **Trialee:** <@${trialee.id}>
             **Role:** ${this.client.util.utilities.roles[role]}
             ${comment ? `**Comment:** ${comment}` : ''}
             `);
-        await gemScores.send({ embeds: [gemEmbed] });
+        if (gem) logEmbed.setImage(gem);
         await trialLog.send({ embeds: [logEmbed] });
-
-        // Give Primary Role
-        const roleId = this.client.util.utilities.functions.stripRole(this.client.util.utilities.roles[role]);
-        let trialeeMember = await interaction.guild?.members.fetch(trialee.id);
-        await trialeeMember?.roles.add(roleId);
-
-        // Give Member
-        const member = this.client.util.utilities.functions.stripRole(this.client.util.utilities.roles['member']);
-        await trialeeMember?.roles.add(member);
-
-        // Give Addditional Roles
-        if (this.client.util.utilities.extraRoles[role]) {
-            this.client.util.utilities.extraRoles[role].forEach(async (extraRole: string) => {
-                const extraRoleId = this.client.util.utilities.functions.stripRole(this.client.util.utilities.roles[extraRole]);
-                await trialeeMember?.roles.add(extraRoleId);
-            })
-        }
 
         const replyEmbed = new EmbedBuilder()
             .setTitle('Trial Recorded!')
             .setColor(this.client.util.utilities.colours.discord.green)
             .setDescription(`
-            **Gem Score:** <#${gemScores.id}>
             **Trial Log:** <#${trialLog.id}>
             `);
         await interaction.editReply({ embeds: [replyEmbed] });

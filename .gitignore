@@ -18,3 +18,5 @@ config.json
 dist/
 *.key
 *.pub
+copy.sh
+connect.sh
