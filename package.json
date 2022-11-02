@@ -1,14 +1,14 @@
 {
-    "name": "pvme-util-bot",
+    "name": "nex-aod-util-bot",
     "version": "1.0.0",
-    "description": "A Music bot made from indomitable and ESNext",
+    "description": "A bot made to help Nex AoD Administration",
     "scripts": {
         "build": "tsc --watch",
         "dev": "ts-node index.ts",
         "prestart": "tsc",
         "start": "node ./dist/index.js"
     },
-    "author": "TXJ",
+    "author": "Fate",
     "license": "MIT",
     "dependencies": {
         "@sapphire/discord.js-utilities": "^5.1.0-pr-434.549335e.0",

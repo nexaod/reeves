@@ -16,3 +16,5 @@ package-lock.json
 node_modules/
 config.json
 dist/
+*.key
+*.pub

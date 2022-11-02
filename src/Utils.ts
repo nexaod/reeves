@@ -11,7 +11,11 @@ export const Colours = {
     gold: 12745742,
     default: 5198940,
     lightblue: 302332,
-    darkgrey: 333333
+    darkgrey: 333333,
+    discord: {
+        green: 5763719,
+        red: 15548997
+    }
 }
 
 export const Emojis = {
@@ -348,7 +352,10 @@ const DevRoles: any = {
     t4AoD: '<@&1026519440147349524>',
     aodFanatic: '<@&1026519503724617769>',
     angelSlayer: '<@&1026519507621130310>',
-    member: '<@&1026696194224824351>'
+    member: '<@&1026696194224824351>',
+    magicFree: '<@&1036604467807801374>',
+    rangedFree: '<@&1036604481120505856>',
+    mrFree: '<@&1036605223684280321>'
 }
 
 const ProdRoles: any = {
@@ -416,14 +423,45 @@ const ProdRoles: any = {
     t4AoD: '<@&818499185166909442>',
     aodFanatic: '<@&818499016576073748>',
     angelSlayer: '<@&818498816923009035>',
-    member: '<@&742114133201387565>'
+    member: '<@&742114133201387565>',
+    magicFree: '<@&896143035044343828>',
+    rangedFree: '<@&864510172952002581>',
+    mrFree: '<@&1024416642970701986>'
+}
+
+const trialRoles: any = {
+    'Magic Entangle': 'magicEnt',
+    'Magic Base': 'magicBase',
+    'Ranged Entangle': 'rangedEnt',
+    'Chinner': 'chinner',
+    'Melee Entangle': 'meleeEnt',
+    'Magic/Ranged Entangle': 'mrEnt',
+    'Magic/Ranged Hammer': 'mrHammer',
+    'Magic/Ranged Base': 'mrBase'
+}
+
+const extraRoles: any = {
+    'magicEnt': ['magicFree'],
+    'rangedEnt': ['rangedFree'],
+    'meleeEnt': ['meleeFree'],
+    'mrEnt': ['mrFree'],
+    'mrHammer': ['mrFree'],
+}
+
+const stripRole = (role: string) => {
+    return role.slice(3, -1)
 }
 
 const Utilities = {
     colours: Colours,
     emojis: Emojis,
     roles: environment === 'PRODUCTION' ? ProdRoles : DevRoles,
-    channels: environment === 'PRODUCTION' ? ProdChannels : DevChannels
+    channels: environment === 'PRODUCTION' ? ProdChannels : DevChannels,
+    trialRoles: trialRoles,
+    extraRoles: extraRoles,
+    functions: {
+        stripRole
+    }
 }
 
 export default Utilities;
