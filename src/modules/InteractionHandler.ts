@@ -1,5 +1,5 @@
 import { readdirSync } from 'fs';
-import { EmbedBuilder, Collection, Interaction } from 'discord.js';
+import { EmbedBuilder, Collection, Interaction, SelectMenuInteraction, Message, InteractionResponse } from 'discord.js';
 import Bot from '../Bot';
 import BotInteraction from '../types/BotInteraction';
 import EventEmitter = require('events');
@@ -68,7 +68,18 @@ export default class InteractionHandler extends EventEmitter {
         return _containsRole;
     }
 
+    public async handleSelectMenu(interaction: SelectMenuInteraction<'cached'>): Promise<Message<true> | InteractionResponse<true> | void> {
+        if (interaction.customId === 'trialList') {
+            await interaction.deferReply({ ephemeral: true });
+            await this.client.database.set('name', interaction.values);
+            const val = await this.client.database.get('name');
+            console.log(val[0]);
+            return await interaction.editReply(`${interaction.customId}`);
+        }
+    }
+
     async exec(interaction: Interaction): Promise<any> {
+        if (interaction.isSelectMenu() && interaction.inCachedGuild()) { return this.handleSelectMenu(interaction) }
         if (interaction.isCommand() && interaction.isRepliable() && interaction.inCachedGuild()) {
             try {
                 const command = this.commands.get(interaction.commandName);

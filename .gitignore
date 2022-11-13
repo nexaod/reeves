@@ -13,6 +13,7 @@ node_modules
 db
 package-lock.json
 .env
+prod.env
 node_modules/
 config.json
 dist/
