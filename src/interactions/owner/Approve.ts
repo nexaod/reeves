@@ -59,5 +59,14 @@ export default class Pass extends BotInteraction {
             **Status:** ✅
             `);
         await interaction.editReply({ embeds: [replyEmbed] });
+
+        // Attempt to DM a notification to trialee.
+        const dmEmbed = new EmbedBuilder()
+            .setTitle('Your application to Nex AoD has been approved!')
+            .setColor(this.client.util.utilities.colours.discord.green)
+            .setDescription(`
+            Follow the instructions and pick a trial date in <#${this.client.util.utilities.channels.trialSignup}>
+            `);
+        await trialee.send({ embeds: [dmEmbed] });
     }
 }
