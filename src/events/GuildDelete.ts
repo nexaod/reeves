@@ -1,5 +1,5 @@
 import { Guild } from 'discord.js';
-import BotEvent from '../types/BotEvent.js';
+import BotEvent from '../types/BotEvent';
 
 export default class GuildDelete extends BotEvent {
     get name() {

@@ -1,5 +1,5 @@
-import { readdirSync } from 'fs';
-import { EmbedBuilder, Collection, Interaction } from 'discord.js';
+import { Dirent, readdirSync } from 'fs';
+import { EmbedBuilder, Collection, Interaction, SelectMenuInteraction, Message, InteractionResponse } from 'discord.js';
 import Bot from '../Bot';
 import BotInteraction from '../types/BotInteraction';
 import EventEmitter = require('events');
@@ -24,20 +24,39 @@ export default class InteractionHandler extends EventEmitter {
 
     build() {
         if (this.built) return this;
-        const directories = readdirSync(`${this.client.location}/dist/src/interactions`, { withFileTypes: true });
-        for (const directory of directories) {
-            if (!directory.isDirectory()) continue;
-            const commands = readdirSync(`${this.client.location}/dist/src/interactions/${directory.name}`, { withFileTypes: true });
-            for (const command of commands) {
-                if (!command.isFile()) continue;
-                if (!command.name.endsWith('.js')) continue;
-                import(`${this.client.location}/dist/src/interactions/${directory.name}/${command.name}`).then((interaction) => {
-                    const Command: BotInteraction = new interaction.default(this.client);
-                    Command.category = directory.name.charAt(0).toUpperCase() + directory.name.substring(1);
-                    this.commands.set(Command.name, Command);
-                    this.client.logger.log({ message: `Command '${Command.name}' loaded`, handler: this.constructor.name, uid: `(@${Command.uid})` }, false);
-                });
-            }
+        const dirs = readdirSync(`${this.client.location}/src/interactions`, { withFileTypes: true });
+        const name = this.constructor.name;
+        const commands = this.commands;
+        const client = this.client;
+        let cmds: Dirent[] = [];
+
+        walk();
+
+        async function walk() {
+            if (!dirs.length) return;
+            cmds = readdirSync(`${client.location}/src/interactions/${dirs[0].name}`, { withFileTypes: true }).filter((file) => file.name.endsWith('.ts'));
+            await load(dirs[0].name);
+            (dirs as Dirent[]).shift();
+            walk();
+        }
+
+        async function load(dir: string) {
+            if (!cmds.length) return;
+            await actuallyLoad(dir, cmds[0]);
+            (cmds as Dirent[]).shift();
+            await load(dir);
+        }
+
+        async function actuallyLoad(dir: string, command: Dirent) {
+            return new Promise(async (resolve) => {
+                if (command.isFile()) {
+                    const interaction = await import(`${client.location}/src/interactions/${dir}/${command.name}`);
+                    const Command: BotInteraction = new interaction.default(client);
+                    commands.set(Command.name, Command);
+                    client.logger.log({ message: `Command '${Command.name}' loaded`, handler: name, uid: `(@${Command.uid})` }, false);
+                }
+                resolve(!0);
+            });
         }
         return this;
     }
@@ -68,7 +87,18 @@ export default class InteractionHandler extends EventEmitter {
         return _containsRole;
     }
 
+    public async handleSelectMenu(interaction: SelectMenuInteraction<'cached'>): Promise<Message<true> | InteractionResponse<true> | void> {
+        if (interaction.customId === 'trialList') {
+            await interaction.deferReply({ ephemeral: true });
+            await this.client.database.set('name', interaction.values);
+            const val = await this.client.database.get('name');
+            console.log(val[0]);
+            return await interaction.editReply(`${interaction.customId}`);
+        }
+    }
+
     async exec(interaction: Interaction): Promise<any> {
+        if (interaction.isSelectMenu() && interaction.inCachedGuild()) { return this.handleSelectMenu(interaction) }
         if (interaction.isCommand() && interaction.isRepliable() && interaction.inCachedGuild()) {
             try {
                 const command = this.commands.get(interaction.commandName);
@@ -87,7 +117,7 @@ export default class InteractionHandler extends EventEmitter {
                         }
                         break;
                     case 'APPLICATION_TEAM':
-                        if (interaction.isRepliable() && !(this.client.util.config.owners.includes(interaction.user.id) || this.client.util.config.applicationTeamMembers.includes(interaction.user.id))) {
+                        if (!(await this.client.util.hasRolePermissions(this.client, ['applicationTeam', 'organiser', 'coOwner'], interaction))) {
                             this.client.logger.log(
                                 {
                                     message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username}, channel: ${interaction.channel} }`,
