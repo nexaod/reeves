@@ -98,7 +98,7 @@ export default class InteractionHandler extends EventEmitter {
                         }
                         break;
                     case 'APPLICATION_TEAM':
-                        if (interaction.isRepliable() && !this.client.util.config.applicationTeamMembers.includes(interaction.user.id)) {
+                        if (interaction.isRepliable() && !(this.client.util.config.owners.includes(interaction.user.id) || this.client.util.config.applicationTeamMembers.includes(interaction.user.id))) {
                             this.client.logger.log(
                                 {
                                     message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username}, channel: ${interaction.channel} }`,

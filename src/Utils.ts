@@ -267,7 +267,9 @@ const DevChannels = {
     botGuide: '1033224923734356018',
     streamers: '1033768665633525850',
     gemScores: '1034480950198927380',
-    trialLog: '1034481085700116561'
+    trialLog: '1034481085700116561',
+    applications: '1041468135074697298',
+    trialSignup: '1041475525673222278'
 }
 
 const ProdChannels = {
@@ -288,7 +290,9 @@ const ProdChannels = {
     botGuide: '1029912020608356452',
     streamers: '742114133796847681',
     gemScores: '1004273622971584594',
-    trialLog: '1004273661659840522'
+    trialLog: '1004273661659840522',
+    applications: '1004299323871334440',
+    trialSignup: '1004252528554283078'
 }
 
 const DevRoles: any = {
