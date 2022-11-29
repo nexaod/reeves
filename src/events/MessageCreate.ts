@@ -1,5 +1,5 @@
 import { Message, SlashCommandBuilder } from 'discord.js';
-import BotEvent from '../types/BotEvent.js';
+import BotEvent from '../types/BotEvent';
 import { readdirSync } from 'fs';
 import BotInteraction from '../types/BotInteraction';
 
@@ -90,12 +90,12 @@ export default class MessageCreate extends BotEvent {
     }
 
     private async buildCommands(data: any[]) {
-        for await (const directory of readdirSync(`${this.client.location}/dist/src/interactions`, { withFileTypes: true })) {
+        for await (const directory of readdirSync(`${this.client.location}/src/interactions`, { withFileTypes: true })) {
             if (!directory.isDirectory()) continue;
-            for await (const command of readdirSync(`${this.client.location}/dist/src/interactions/${directory.name}`, { withFileTypes: true })) {
+            for await (const command of readdirSync(`${this.client.location}/src/interactions/${directory.name}`, { withFileTypes: true })) {
                 if (!command.isFile()) continue;
-                if (command.name.endsWith('.js')) {
-                    import(`${this.client.location}/dist/src/interactions/${directory.name}/${command.name}`).then((interaction) => {
+                if (command.name.endsWith('.ts')) {
+                    import(`${this.client.location}/src/interactions/${directory.name}/${command.name}`).then((interaction) => {
                         const Command: BotInteraction = new interaction.default(this.client);
                         Command.slashData ? data.push(Command.slashData) : void 0;
                     });

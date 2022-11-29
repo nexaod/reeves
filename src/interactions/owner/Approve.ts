@@ -14,17 +14,21 @@ export default class Pass extends BotInteraction {
         return 'APPLICATION_TEAM';
     }
 
-    get slashData() {
-        const RoleOptions: any = [];
-        Object.keys(this.client.util.utilities.trialRoles).forEach((key: string) => {
-            RoleOptions.push({ name: key, value: this.client.util.utilities.trialRoles[key] })
+    get options() {
+        const options: any = [];
+        Object.keys(this.client.util.trialRoleOptions).forEach((key: string) => {
+            options.push({ name: key, value: this.client.util.trialRoleOptions[key] })
         })
+        return options;
+    }
+
+    get slashData() {
         return new SlashCommandBuilder()
             .setName(this.name)
             .setDescription(this.description)
             .addUserOption((option) => option.setName('trialee').setDescription('Trialee').setRequired(true))
             .addStringOption((option) => option.setName('role').setDescription('Trialee role').addChoices(
-                ...RoleOptions
+                ...this.options
             ).setRequired(true))
     }
 
@@ -33,18 +37,20 @@ export default class Pass extends BotInteraction {
         const trialee: User = interaction.options.getUser('trialee', true);
         const role: string = interaction.options.getString('role', true);
 
-        const applicationChannel = await this.client.channels.fetch(this.client.util.utilities.channels.applications) as TextChannel;
+        const { channels, colours, roles, stripRole } = this.client.util;
+
+        const applicationChannel = await this.client.channels.fetch(channels.applications) as TextChannel;
 
         // Give Ready For Trial
         let trialeeMember = await interaction.guild?.members.fetch(trialee.id);
-        const readyForTrial = this.client.util.utilities.functions.stripRole(this.client.util.utilities.roles.readyForTrial);
+        const readyForTrial = stripRole(roles.readyForTrial);
         await trialeeMember?.roles.add(readyForTrial);
 
-        const roleId = this.client.util.utilities.functions.stripRole(this.client.util.utilities.roles[role]);
+        const roleId = stripRole(roles[role]);
 
         const successEmbed = new EmbedBuilder()
             .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() || '' })
-            .setColor(this.client.util.utilities.colours.discord.green)
+            .setColor(colours.discord.green)
             .setTitle('Application Approved!')
             .setDescription(`
             **Applicant:** <@${trialee.id}>
@@ -54,7 +60,7 @@ export default class Pass extends BotInteraction {
 
         const replyEmbed = new EmbedBuilder()
             .setTitle('Application Approved!')
-            .setColor(this.client.util.utilities.colours.discord.green)
+            .setColor(colours.discord.green)
             .setDescription(`
             **Status:** ✅
             `);
@@ -63,9 +69,9 @@ export default class Pass extends BotInteraction {
         // Attempt to DM a notification to trialee.
         const dmEmbed = new EmbedBuilder()
             .setTitle('Your application to Nex AoD has been approved!')
-            .setColor(this.client.util.utilities.colours.discord.green)
+            .setColor(colours.discord.green)
             .setDescription(`
-            Follow the instructions and pick a trial date in <#${this.client.util.utilities.channels.trialSignup}>
+            Follow the instructions and pick a trial date in <#${channels.trialSignup}>
             `);
         await trialee.send({ embeds: [dmEmbed] });
     }

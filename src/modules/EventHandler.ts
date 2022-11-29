@@ -18,19 +18,31 @@ export default class EventHandler {
 
     build() {
         if (this.built) return this;
-        const events = readdirSync(this.client.location + '/dist/src/events');
-        for (let event of events) {
-            if (event.endsWith('.js')) {
-                import(`${this.client.location}/dist/src/events/${event}`).then((event) => {
-                    const botEvent: BotEvent = new event.default(this.client);
-                    this.client.logger.log({ message: `Event '${botEvent.name}' loaded.`, handler: this.constructor.name, uid: `(@${botEvent.uid})` }, false);
-                    if (botEvent.enabled) {
-                        const exec = botEvent.exec.bind(botEvent);
-                        this.client[botEvent.fireOnce ? 'once' : 'on'](botEvent.name, exec);
-                    }
-                });
-            }
+        const events = readdirSync(this.client.location + '/src/events').filter((file) => file.endsWith('.ts'));
+        const client = this.client;
+        const name = this.constructor.name;
+        load();
+
+        async function load() {
+            if (!events.length) return;
+            await actuallyLoad(events[0]);
+            (events as string[]).shift();
+            load();
         }
+
+        async function actuallyLoad(event: string) {
+            return new Promise(async (resolve) => {
+                const handler = await import(`${client.location}/src/events/${event}`);
+                const botEvent: BotEvent = new handler.default(client);
+                client.logger.log({ message: `Event '${botEvent.name}' loaded.`, handler: name, uid: `(@${botEvent.uid})` }, false);
+                if (botEvent.enabled) {
+                    const exec = botEvent.exec.bind(botEvent);
+                    client[botEvent.fireOnce ? 'once' : 'on'](botEvent.name, exec);
+                }
+                resolve(!0);
+            });
+        }
+
         this.built = true;
         return this;
     }

@@ -1,6 +1,10 @@
 import BotInteraction from '../../types/BotInteraction';
 import { ChatInputCommandInteraction, SlashCommandBuilder, TextChannel, User, EmbedBuilder } from 'discord.js';
 
+interface ExtraRoles {
+    [key: string]: string[];
+}
+
 export default class Pass extends BotInteraction {
     get name() {
         return 'pass';
@@ -14,17 +18,31 @@ export default class Pass extends BotInteraction {
         return 'OWNER';
     }
 
-    get slashData() {
-        const RoleOptions: any = [];
-        Object.keys(this.client.util.utilities.trialRoles).forEach((key: string) => {
-            RoleOptions.push({ name: key, value: this.client.util.utilities.trialRoles[key] })
+    get options() {
+        const options: any = [];
+        Object.keys(this.client.util.trialRoleOptions).forEach((key: string) => {
+            options.push({ name: key, value: this.client.util.trialRoleOptions[key] })
         })
+        return options;
+    }
+
+    get extraRoles(): ExtraRoles {
+        return {
+            'magicEnt': ['magicFree'],
+            'rangedEnt': ['rangedFree'],
+            'meleeEnt': ['meleeFree'],
+            'mrEnt': ['mrFree'],
+            'mrHammer': ['mrFree'],
+        }
+    }
+
+    get slashData() {
         return new SlashCommandBuilder()
             .setName(this.name)
             .setDescription(this.description)
             .addUserOption((option) => option.setName('trialee').setDescription('Trialee').setRequired(true))
             .addStringOption((option) => option.setName('role').setDescription('Trialee role').addChoices(
-                ...RoleOptions
+                ...this.options
             ).setRequired(true))
             .addStringOption((option) => option.setName('gem').setDescription('URL for Challenge Gem').setRequired(true))
             .addStringOption((option) => option.setName('comment').setDescription('Comment').setRequired(false));
@@ -37,50 +55,52 @@ export default class Pass extends BotInteraction {
         const gem: string = interaction.options.getString('gem', true);
         const comment: string | null = interaction.options.getString('comment', false);
 
-        const gemScores = await this.client.channels.fetch(this.client.util.utilities.channels.gemScores) as TextChannel;
-        const trialLog = await this.client.channels.fetch(this.client.util.utilities.channels.trialLog) as TextChannel;
+        const { channels, colours, roles, stripRole } = this.client.util;
+
+        const gemScores = await this.client.channels.fetch(channels.gemScores) as TextChannel;
+        const trialLog = await this.client.channels.fetch(channels.trialLog) as TextChannel;
 
         const gemEmbed = new EmbedBuilder()
             .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() || '' })
-            .setColor(this.client.util.utilities.colours.discord.green)
+            .setColor(colours.discord.green)
             .setImage(gem)
             .setDescription(`
             **Status:** ✅
             **Trialee:** <@${trialee.id}>
-            **Role:** ${this.client.util.utilities.roles[role]}
+            **Role:** ${roles[role]}
             `);
         const logEmbed = new EmbedBuilder()
             .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL() || '' })
-            .setColor(this.client.util.utilities.colours.discord.green)
+            .setColor(colours.discord.green)
             .setDescription(`
             **Status:** ✅
             **Trialee:** <@${trialee.id}>
-            **Role:** ${this.client.util.utilities.roles[role]}
+            **Role:** ${roles[role]}
             ${comment ? `**Comment:** ${comment}` : ''}
             `);
         await gemScores.send({ embeds: [gemEmbed] });
         await trialLog.send({ embeds: [logEmbed] });
 
         // Give Primary Role
-        const roleId = this.client.util.utilities.functions.stripRole(this.client.util.utilities.roles[role]);
+        const roleId = stripRole(roles[role]);
         let trialeeMember = await interaction.guild?.members.fetch(trialee.id);
         await trialeeMember?.roles.add(roleId);
 
         // Give Member
-        const member = this.client.util.utilities.functions.stripRole(this.client.util.utilities.roles['member']);
+        const member = stripRole(roles['member']);
         await trialeeMember?.roles.add(member);
 
         // Give Addditional Roles
-        if (this.client.util.utilities.extraRoles[role]) {
-            this.client.util.utilities.extraRoles[role].forEach(async (extraRole: string) => {
-                const extraRoleId = this.client.util.utilities.functions.stripRole(this.client.util.utilities.roles[extraRole]);
+        if (this.extraRoles[role]) {
+            this.extraRoles[role].forEach(async (extraRole: string) => {
+                const extraRoleId = stripRole(roles[extraRole]);
                 await trialeeMember?.roles.add(extraRoleId);
             })
         }
 
         const replyEmbed = new EmbedBuilder()
             .setTitle('Trial Recorded!')
-            .setColor(this.client.util.utilities.colours.discord.green)
+            .setColor(colours.discord.green)
             .setDescription(`
             **Gem Score:** <#${gemScores.id}>
             **Trial Log:** <#${trialLog.id}>

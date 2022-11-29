@@ -4,9 +4,8 @@ import BotLogger from './modules/LoggingHandler';
 import InteractionHandler from './modules/InteractionHandler';
 import EventHandler from './modules/EventHandler';
 import UtilityHandler from './modules/UtilityHandler';
-
-const Keyv = require("keyv");
-const { KeyvFile } = require("keyv-file");
+import DatabaseHandler from './modules/DatabaseHandler';
+import Keyv = require('keyv');
 
 export default interface Bot extends Client {
     color: number;
@@ -17,7 +16,7 @@ export default interface Bot extends Client {
     logger: BotLogger;
     interactions: InteractionHandler;
     events: EventHandler;
-    database: typeof Keyv
+    database: Keyv<any, Record<string, unknown>>;
 }
 
 export default class Bot extends Client {
@@ -25,6 +24,7 @@ export default class Bot extends Client {
         super(options);
 
         this.color = 0x7e686c;
+        this.database = new DatabaseHandler(this, 'db.json');
         this.commandsRun = 0;
         this.util = new UtilityHandler(this);
         this.quitting = false;
@@ -32,14 +32,6 @@ export default class Bot extends Client {
         this.logger = new BotLogger();
         this.interactions = new InteractionHandler(this).build();
         this.events = new EventHandler(this).build();
-        this.database = new Keyv({
-            store: new KeyvFile({
-                filename: "db.json",
-                writeDelay: 100,
-                encode: JSON.stringify,
-                decode: JSON.parse
-            }),
-        });
 
         process.on('unhandledRejection', (err: any): void => {
             this.logger.error({ message: `UnhandledRejection from Process`, error: err.stack });

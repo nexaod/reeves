@@ -4,9 +4,9 @@
     "description": "A bot made to help Nex AoD Administration",
     "scripts": {
         "build": "tsc --watch",
-        "dev": "ts-node index.ts",
+        "start": "ts-node index.ts",
         "prestart": "tsc",
-        "start": "node ./dist/index.js"
+        "dev": "node ./dist/index.js"
     },
     "author": "Fate",
     "license": "MIT",
@@ -27,6 +27,7 @@
         "kurasuta": "^3.0.2",
         "petitio": "^1.4.0",
         "shoukaku": "^3.0.5",
+        "ts-node": "^10.9.1",
         "utf-8-validate": "^5.0.5",
         "uuid": "^8.3.2"
     },
