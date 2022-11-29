@@ -2,6 +2,7 @@ import { Dirent, readdirSync } from 'fs';
 import { EmbedBuilder, Collection, Interaction, SelectMenuInteraction, Message, InteractionResponse } from 'discord.js';
 import Bot from '../Bot';
 import BotInteraction from '../types/BotInteraction';
+import ButtonHandler from './ButtonHandler';
 import EventEmitter = require('events');
 
 export default interface InteractionHandler {
@@ -99,6 +100,9 @@ export default class InteractionHandler extends EventEmitter {
 
     async exec(interaction: Interaction): Promise<any> {
         if (interaction.isSelectMenu() && interaction.inCachedGuild()) { return this.handleSelectMenu(interaction) }
+        if (interaction.isButton() && interaction.inCachedGuild()) {
+            return new ButtonHandler(this.client, interaction.customId, interaction);
+        }
         if (interaction.isCommand() && interaction.isRepliable() && interaction.inCachedGuild()) {
             try {
                 const command = this.commands.get(interaction.commandName);
@@ -117,7 +121,7 @@ export default class InteractionHandler extends EventEmitter {
                         }
                         break;
                     case 'APPLICATION_TEAM':
-                        if (!(await this.client.util.hasRolePermissions(this.client, ['applicationTeam', 'organiser', 'coOwner'], interaction))) {
+                        if (!(await this.client.util.hasRolePermissions(this.client, ['applicationTeam', 'mainTrialHost', 'organiser', 'coOwner'], interaction))) {
                             this.client.logger.log(
                                 {
                                     message: `Attempted restricted permissions. { command: ${command.name}, user: ${interaction.user.username}, channel: ${interaction.channel} }`,

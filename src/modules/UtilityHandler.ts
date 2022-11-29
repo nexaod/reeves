@@ -18,6 +18,18 @@ interface Roles {
     [roleName: string]: string;
 }
 
+interface Categories {
+    killCount: string[]
+    collectionLog: string[]
+    dps: DPSCategory
+}
+
+interface DPSCategory {
+    adept: string[]
+    mastery: string[]
+    extreme: string[]
+}
+
 export default class UtilityHandler {
     constructor(client: Bot) {
         this.client = client;
@@ -68,7 +80,9 @@ export default class UtilityHandler {
                 gemScores: '1034480950198927380',
                 trialLog: '1034481085700116561',
                 applications: '1041468135074697298',
-                trialSignup: '1041475525673222278'
+                trialSignup: '1041475525673222278',
+                achievements: '1047013672247115796',
+                botRoleLog: '1047014490329333811',
             }
         }
         return {
@@ -91,7 +105,9 @@ export default class UtilityHandler {
             gemScores: '1004273622971584594',
             trialLog: '1004273661659840522',
             applications: '1004299323871334440',
-            trialSignup: '1004252528554283078'
+            trialSignup: '1004252528554283078',
+            achievements: '1024425781339881613',
+            botRoleLog: '1047014671347089448',
         }
     }
 
@@ -253,8 +269,52 @@ export default class UtilityHandler {
         }
     }
 
+    get categories(): Categories {
+        return {
+            killCount: ['t1AoD', 't2AoD', 't3AoD', 't4AoD', 'aodFanatic', 'angelSlayer'],
+            collectionLog: ['ofThePraesul', 'truePraesul'],
+            dps: {
+                adept: [''],
+                mastery: [''],
+                extreme: ['']
+            }
+        }
+    }
+
     public stripRole = (role: string) => {
         return role.slice(3, -1)
+    }
+
+    public categorize = (role: string): string => {
+        let category = '';
+        if (this.categories.killCount.includes(role)) {
+            category = 'killCount';
+        } else if (this.categories.collectionLog.includes(role)) {
+            category = 'collectionLog';
+        } else if (this.categories.dps.adept.includes(role)) {
+            category = 'adept';
+        } else if (this.categories.dps.mastery.includes(role)) {
+            category = 'mastery';
+        } else if (this.categories.dps.extreme.includes(role)) {
+            category = 'extreme';
+        } else {
+            category = ''
+        }
+        return category;
+    }
+
+    public categorizeChannel = (role: string) => {
+        const overrides = {
+            achievements: [''],
+            applyForRank: [''],
+        }
+        if (overrides.achievements.includes(role) || this.categories.killCount.includes(role) || this.categories.collectionLog.includes(role)) {
+            return 'achievements'
+        } else if (overrides.applyForRank.includes(role) || this.categories.dps.adept.includes(role) || this.categories.dps.mastery.includes(role) || this.categories.dps.extreme.includes(role)) {
+            return 'applyForRank'
+        } else {
+            return ''
+        }
     }
 
     public hasRolePermissions = async (client: Bot, roleList: string[], interaction: Interaction) => {
