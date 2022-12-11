@@ -4,7 +4,7 @@ A project for Nex AoD FC staff.
 # Installation / Running the Bot
 
 1. `npm install`
-2. Request a configuration file from any `@Bot Developer`.
+2. Set up a `config.json` with webhooks and overriden `OWNER` permissions.
 3. Set your development TOKEN variable in `.env`.
 4. Set your environment ENVIRONMENT variable in `.env`.
 
