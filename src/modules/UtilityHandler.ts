@@ -181,7 +181,8 @@ export default class UtilityHandler {
                 member: '<@&1026696194224824351>',
                 magicFree: '<@&1036604467807801374>',
                 rangedFree: '<@&1036604481120505856>',
-                mrFree: '<@&1036605223684280321>'
+                mrFree: '<@&1036605223684280321>',
+                vulner: '<@&1053715273947037769>',
             }
         }
         return {
@@ -252,7 +253,8 @@ export default class UtilityHandler {
             member: '<@&742114133201387565>',
             magicFree: '<@&896143035044343828>',
             rangedFree: '<@&864510172952002581>',
-            mrFree: '<@&1024416642970701986>'
+            mrFree: '<@&1024416642970701986>',
+            vulner: '<@&1052693087337578637>',
         }
     }
 
@@ -262,10 +264,10 @@ export default class UtilityHandler {
             'Magic Base': 'magicBase',
             'Ranged Entangle': 'rangedEnt',
             'Chinner': 'chinner',
-            'Melee Entangle': 'meleeEnt',
             'Magic/Ranged Entangle': 'mrEnt',
             'Magic/Ranged Hammer': 'mrHammer',
-            'Magic/Ranged Base': 'mrBase'
+            'Magic/Ranged Base': 'mrBase',
+            'Vulner': 'vulner'
         }
     }
 
