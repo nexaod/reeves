@@ -15,7 +15,7 @@ export default class Pass extends BotInteraction {
     }
 
     get permissions() {
-        return 'OWNER';
+        return 'ELEVATED_ROLE';
     }
 
     get options() {
