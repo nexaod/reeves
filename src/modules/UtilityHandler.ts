@@ -183,6 +183,21 @@ export default class UtilityHandler {
                 rangedFree: '<@&1036604481120505856>',
                 mrFree: '<@&1036605223684280321>',
                 vulner: '<@&1053715273947037769>',
+                necroEnt: '<@&1152047655334191115>',
+                necroHammer: '<@&1152048088723243058>',
+                necroFree: '<@&1152047889384747039>',
+                necroBase: '<@&1152048226363519156>',
+                necroEntAdept: '<@&1153057523969052792>',
+                necroHammerAdept: '<@&1153057632878329867>',
+                necroBaseAdept: '<@&1153057715657134121>',
+                necroEntMastery: '<@&1153057919668064399>',
+                necroHammerMastery: '<@&1153058051973193889>',
+                necroFreeMastery: '<@&1153057855138693220>',
+                necroBaseMastery: '<@&1153057985480904736>',
+                necroEntExtreme: '<@&1153058592698671174>',
+                necroHammerExtreme: '<@&1153058729256829028>',
+                necroFreeExtreme: '<@&1153058629012951060>',
+                necroBaseExtreme: '<@&1153058785556971521>',
             }
         }
         return {
@@ -255,6 +270,21 @@ export default class UtilityHandler {
             rangedFree: '<@&864510172952002581>',
             mrFree: '<@&1024416642970701986>',
             vulner: '<@&1052693087337578637>',
+            necroEnt: '<@&1152047655334191115>',
+            necroHammer: '<@&1152048088723243058>',
+            necroFree: '<@&1152047889384747039>',
+            necroBase: '<@&1152048226363519156>',
+            necroEntAdept: '<@&1153057523969052792>',
+            necroHammerAdept: '<@&1153057632878329867>',
+            necroBaseAdept: '<@&1153057715657134121>',
+            necroEntMastery: '<@&1153057919668064399>',
+            necroHammerMastery: '<@&1153058051973193889>',
+            necroFreeMastery: '<@&1153057855138693220>',
+            necroBaseMastery: '<@&1153057985480904736>',
+            necroEntExtreme: '<@&1153058592698671174>',
+            necroHammerExtreme: '<@&1153058729256829028>',
+            necroFreeExtreme: '<@&1153058629012951060>',
+            necroBaseExtreme: '<@&1153058785556971521>',
         }
     }
 
@@ -267,6 +297,9 @@ export default class UtilityHandler {
             'Magic/Ranged Entangle': 'mrEnt',
             'Magic/Ranged Hammer': 'mrHammer',
             'Magic/Ranged Base': 'mrBase',
+            'Necromancy Entangle': 'necroEnt',
+            'Necromancy Hammer': 'necroHammer',
+            'Necromancy Base': 'necroBase',
             'Vulner': 'vulner'
         }
     }

@@ -33,6 +33,7 @@ export default class Pass extends BotInteraction {
             'meleeEnt': ['meleeFree'],
             'mrEnt': ['mrFree'],
             'mrHammer': ['mrFree'],
+            'necroHammer': ['necroFree'],
         }
     }
 
