@@ -1,5 +1,5 @@
 import BotInteraction from '../../types/BotInteraction';
-import { Attachment, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { Attachment, ChatInputCommandInteraction, SlashCommandBuilder, TextChannel } from 'discord.js';
 
 export default class Say extends BotInteraction {
     get name() {
@@ -28,7 +28,7 @@ export default class Say extends BotInteraction {
         const attachment: Attachment | null = interaction.options.getAttachment('image', false);
         // const role: Role | APIRole | null = interaction.options.getRole('role_search', false);
         // const _role_members = interaction.guild?.roles.cache.get(role?.id)?.members.size;
-        await interaction.channel?.send(attachment ? { content: message, files: [attachment] } : { content: message });
+        await (interaction.channel as TextChannel)?.send(attachment ? { content: message, files: [attachment] } : { content: message });
         await interaction.editReply(`Sent Message: \`\`\`\n${message}\n\`\`\``);
     }
 }

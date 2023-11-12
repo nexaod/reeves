@@ -1,5 +1,5 @@
 import * as config from '../../config.json';
-import { EmbedBuilder, ChatInputCommandInteraction, Interaction } from 'discord.js';
+import { EmbedBuilder, ChatInputCommandInteraction, Interaction, TextChannel } from 'discord.js';
 import Bot from '../Bot';
 
 export default interface UtilityHandler {
@@ -362,7 +362,7 @@ export default class UtilityHandler {
     }
 
     public deleteMessage(interaction: ChatInputCommandInteraction<any>, id: string) {
-        return interaction.channel?.messages.fetch(id).then((message) => message.delete());
+        return (interaction.channel as TextChannel)?.messages.fetch(id).then((message) => message.delete());
     }
 
     public removeArrayIndex(array: Array<any>, indexID: number): any[] {
